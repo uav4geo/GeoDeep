@@ -22,3 +22,4 @@ License: AGPLv3, see LICENSE for more details.
 """
 
 name = "geodeep"
+from .geodeep import *

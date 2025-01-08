@@ -1,1 +1,1 @@
-rasterio==1.2.9
+rasterio>=1.2.9
