@@ -1,9 +1,14 @@
 import rasterio
 from .slidingwindow import generate_for_size
+from .models import get_model_file
 import logging
-logger = logging.getLogger(__name__)
+logger = logging.getLogger("geodeep")
 
-def predict(geotiff, model, patch_size=400, patch_overlap=0.05, iou_threshold=0.15):
+def detect(geotiff, model, patch_size=400, patch_overlap=0.05, iou_threshold=0.15):
+    model_file = get_model_file(model)
+    print(model_file)
+    return
+
     with rasterio.open(geotiff) as raster:
         if not raster.is_tiled:
             logger.warning(f"{geotiff} is not tiled. I/O performance will be affected. Consider adding tiles.")
