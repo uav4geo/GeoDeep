@@ -24,7 +24,7 @@ def create_session(model_file):
         'resolution': float(meta.get('resolution', 10)),
         'class_names': meta.get('class_names', {}),
         'model_type': meta.get('model_type', 'Detector'),
-        'tiles_overlap': float(meta.get('tiles_overlap', 5)) # percentage
+        'tiles_overlap': float(meta.get('tiles_overlap', 5)), # percentage
         'tiles_size': inputs[0].shape[-1],
         'input_shape': inputs[0].shape,
         'input_name': inputs[0].name,
