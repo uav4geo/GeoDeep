@@ -5,7 +5,8 @@ logger = logging.getLogger("geodeep")
 
 MODELS = {
     'cars': 'https://huggingface.co/datasets/UAV4GEO/GeoDeep-Models/resolve/main/car_aerial_detection_yolo7_ITCVD_deepness.onnx',
-    # TODO: add more
+    'trees': 'https://huggingface.co/datasets/UAV4GEO/GeoDeep-Models/resolve/main/yolov9_trees.onnx',
+    # TODO add more
 }
 
 def get_user_cache_dir():
@@ -19,7 +20,7 @@ def get_user_cache_dir():
     else:
         return ""
 
-# This can be overriden at runtime    
+# This can be overridden at runtime    
 cache_dir = os.path.join(get_user_cache_dir(), "geodeep")
 
 def list_models():

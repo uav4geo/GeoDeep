@@ -4,14 +4,14 @@ import numpy as np
 from typing import List
 from .utils import xywh2xyxy
 
-def postprocess(model_output, confidence=0.3, iou_threshold=0.8):
-    filtered = model_output[model_output[:, :, 4] >= confidence]
+def postprocess(model_output, config):
+    filtered = model_output[model_output[:, :, 4] >= config['det_conf']]
     if not len(filtered):
         return [], [], []
     
     scores = filtered[:, 4]
     outputs = xywh2xyxy(filtered)
-    outputs_nms = outputs[non_max_suppression_fast(outputs, scores, iou_threshold)]
+    outputs_nms = outputs[non_max_suppression_fast(outputs, scores, config['det_iou_thresh'])]
     
     boxes = outputs_nms[:, :4].astype(np.int32)
     scores = outputs_nms[:, 4]
