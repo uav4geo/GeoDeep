@@ -2,8 +2,6 @@
 
 A fast, lightweight Python library for AI object detection in geospatial rasters (GeoTIFFs). 
 
-Its main advantage over other software packages (e.g. [Deepness](https://github.com/PUTvision/qgis-plugin-deepness)) is that it depends only on two packages, `rasterio` and `onnxruntime`. This makes it both simple and lightweight.
-
 > :warning: This library is a work in progress.
 
 ## Install
@@ -15,6 +13,10 @@ pip install -U geodeep
 ## Usage
 
 Check the [documentation](https://geodeep.readthedocs.io/).
+
+## Why GeoDeep?
+
+Compared to other software packages (e.g. [Deepness](https://github.com/PUTvision/qgis-plugin-deepness)), GeoDeep relies only on two dependencies, `rasterio` and `onnxruntime`. This makes it simple and lightweight.
 
 ## Contributing
 
