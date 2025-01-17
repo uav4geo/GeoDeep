@@ -19,7 +19,8 @@ def detect(geotiff, model):
 
         for idx, w in enumerate(windows):
             data = raster.read(window=w)
-
+            print(data.shape)
+            exit(1)
             # TODO TEST
             profile = raster.profile
             profile.update({

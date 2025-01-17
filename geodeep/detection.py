@@ -4,6 +4,38 @@ import numpy as np
 from typing import List
 from .utils import xywh2xyxy
 
+def preprocess(model_input):
+    s = model_input.shape
+    if len(s) != 3:
+        raise Exception(f"Expected input with 3 dimensions, got: {s}")
+    
+    # expected: channel,height,width
+    if s[2] in [3,4] and s[0] > s[2]:
+        model_input = np.transpose(model_input, (2, 0, 1))
+    
+    # add batch dimension (1, c, h, w)
+    model_input = np.expand_dims(model_input, axis=0)
+    
+    # normalize
+    if model_input.dtype == np.uint8:
+        return model_input / 255.0
+    
+    if model_input.dtype.kind == 'f':
+        min_value = float(model_input.min())
+        value_range = float(model_input.max()) - min_value
+    else:
+        data_range = np.iinfo(image.dtype)
+        min_value = 0
+        value_range = float(data_range.max) - float(data_range.min)
+    
+    model_input = model_input.astype(np.float32)
+    model_input -= min_value
+    model_input /= value_range
+    model_input[model_input > 1] = 1
+    model_input[model_input < 0] = 0
+
+    return model_input
+
 def postprocess(model_output, config):
     filtered = model_output[model_output[:, :, 4] >= config['det_conf']]
     if not len(filtered):
