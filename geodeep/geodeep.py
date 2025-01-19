@@ -1,7 +1,9 @@
 import rasterio
+import numpy as np
 from .slidingwindow import generate_for_size
 from .models import get_model_file
 from .inference import create_session
+from .detection import execute, non_max_suppression_fast, extract_bsc
 import logging
 logger = logging.getLogger("geodeep")
 
@@ -16,22 +18,34 @@ def detect(geotiff, model):
         height = raster.shape[1]
 
         windows = generate_for_size(width, height, config['tiles_size'], config['tiles_overlap'] / 100.0)
+        outputs = []
 
         for idx, w in enumerate(windows):
-            data = raster.read(window=w)
-            print(data.shape)
-            exit(1)
-            # TODO TEST
-            profile = raster.profile
-            profile.update({
-                "width": w.width,
-                "height": w.height,
-                "transform": raster.window_transform(w)
-            })
+            img = raster.read(window=w, boundless=True, fill_value=0)
+            res = execute(img, session, config)
+            save_raster(img, f"tmp/tile_{idx}.tif", raster)
+            
+            if len(res):
 
-            with rasterio.open(geotiff + f"{idx}.tif", "w", **profile) as dst:
-                dst.write(data)
-                print(f"Wrote {idx}")
+                bboxes, scores, classes = extract_bsc(res)
+                from .debug import draw_boxes, save_raster
+                save_raster(img, f"tmp/tile_{idx}.tif", raster)
+                draw_boxes(f"tmp/tile_{idx}.tif", f"tmp/tile_{idx}_out.tif", bboxes, scores)
 
+                # Shift bbox coordinates from tile space to raster space
+                res[:,0:4] += np.array([w.col_off, w.row_off, w.col_off, w.row_off])
+                outputs.append(res)
+
+        outputs = np.vstack(outputs)
+        outputs = non_max_suppression_fast(outputs, config['det_iou_thresh'])
+
+        print(outputs)
+
+        bboxes, scores, classes = extract_bsc(outputs)
+
+        from .debug import draw_boxes
+        draw_boxes(geotiff, "tmp/out.tif", bboxes, scores)
+
+        print("OK")
     return []
 

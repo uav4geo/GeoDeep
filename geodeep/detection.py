@@ -6,19 +6,31 @@ from .utils import xywh2xyxy
 
 def preprocess(model_input):
     s = model_input.shape
-    if len(s) != 3:
-        raise Exception(f"Expected input with 3 dimensions, got: {s}")
-    
-    # expected: channel,height,width
-    if s[2] in [3,4] and s[0] > s[2]:
-        model_input = np.transpose(model_input, (2, 0, 1))
+    if not len(s) in [3,4]:
+        raise Exception(f"Expected input with 3 or 4 dimensions, got: {s}")
+    is_batched = len(s) == 4
+
+    # expected: [batch],channel,height,width but could be: [batch],height,width,channel
+    if s[-1] in [3,4] and s[1] > s[-1]:
+        if is_batched:
+            model_input = np.transpose(model_input, (0, 3, 1, 2))
+        else:
+            model_input = np.transpose(model_input, (2, 0, 1))
     
     # add batch dimension (1, c, h, w)
-    model_input = np.expand_dims(model_input, axis=0)
+    if not is_batched:
+        model_input = np.expand_dims(model_input, axis=0)
+    
+    # drop alpha channel
+    if model_input.shape[1] == 4:
+        model_input = model_input[:,0:3,:,:]
+    
+    if model_input.shape[1] != 3:
+        raise Exception(f"Expected input channels to be 3, but got: {model_input.shape[1]}")
     
     # normalize
     if model_input.dtype == np.uint8:
-        return model_input / 255.0
+        return (model_input / 255.0).astype(np.float32)
     
     if model_input.dtype.kind == 'f':
         min_value = float(model_input.min())
@@ -39,19 +51,20 @@ def preprocess(model_input):
 def postprocess(model_output, config):
     filtered = model_output[model_output[:, :, 4] >= config['det_conf']]
     if not len(filtered):
-        return [], [], []
+        return np.empty((0, 6), dtype=np.float32)
     
-    scores = filtered[:, 4]
     outputs = xywh2xyxy(filtered)
-    outputs_nms = outputs[non_max_suppression_fast(outputs, scores, config['det_iou_thresh'])]
-    
-    boxes = outputs_nms[:, :4].astype(np.int32)
-    scores = outputs_nms[:, 4]
-    classes = np.argmax(outputs_nms[:, 5:], axis=1)
+
+    return non_max_suppression_fast(outputs, config['det_iou_thresh'])
+
+def extract_bsc(outputs):
+    boxes = outputs[:, :4].astype(np.int32)
+    scores = outputs[:, 4]
+    classes = np.argmax(outputs[:, 5:], axis=1)
 
     return boxes, scores, classes
 
-def non_max_suppression_fast(boxes: np.ndarray, scores: np.ndarray, iou_threshold: float) -> List:
+def non_max_suppression_fast(outputs: np.ndarray, iou_threshold: float) -> List:
     """Apply non-maximum suppression to bounding boxes
 
     Based on:
@@ -59,30 +72,30 @@ def non_max_suppression_fast(boxes: np.ndarray, scores: np.ndarray, iou_threshol
 
     Parameters
     ----------
-    boxes : np.ndarray
-        Bounding boxes in (x1,y1,x2,y2) format
-    scores : np.ndarray
-        Confidence scores
+    outputs : np.ndarray
+        Output array containing bounding boxes in (x1,y1,x2,y2) format and scores
     iou_threshold : float
         IoU threshold
 
     Returns
     -------
-    List
-        List of indexes of bounding boxes to keep
+    np.ndarray
+        Bounding boxes to keep
     """
     # If no bounding boxes, return empty list
-    if len(boxes) == 0:
+    if len(outputs) == 0:
         return []
 
+    scores = outputs[:, 4]
+
     # coordinates of bounding boxes
-    start_x = boxes[:, 0]
-    start_y = boxes[:, 1]
-    end_x = boxes[:, 2]
-    end_y = boxes[:, 3]
+    start_x = outputs[:, 0]
+    start_y = outputs[:, 1]
+    end_x = outputs[:, 2]
+    end_y = outputs[:, 3]
 
     # Picked bounding boxes
-    picked_boxes = []
+    pick_ids = []
 
     # Compute areas of bounding boxes
     areas = (end_x - start_x + 1) * (end_y - start_y + 1)
@@ -96,13 +109,13 @@ def non_max_suppression_fast(boxes: np.ndarray, scores: np.ndarray, iou_threshol
         index = order[-1]
 
         # Pick the bounding box with largest confidence score
-        picked_boxes.append(index)
+        pick_ids.append(index)
         ratio = compute_iou(index, order, start_x, start_y, end_x, end_y, areas)
 
         left = np.where(ratio < iou_threshold)
         order = order[left]
 
-    return picked_boxes
+    return outputs[pick_ids]
 
 
 def compute_iou(index: int, order: np.ndarray, start_x: np.ndarray, start_y: np.ndarray, end_x: np.ndarray, end_y: np.ndarray, areas: np.ndarray) -> np.ndarray:
@@ -144,3 +157,18 @@ def compute_iou(index: int, order: np.ndarray, start_x: np.ndarray, start_y: np.
 
     # Compute the ratio between intersection and union
     return intersection / (areas[index] + areas[order[:-1]] - intersection)
+
+
+def execute(images, session, config):
+    is_batched = len(images.shape) == 4
+    images = preprocess(images)
+    outs = session.run(None, {config['input_name']: images})
+
+    results = []
+    for out in outs:
+        results.append(postprocess(out, config))
+    
+    if is_batched:
+        return np.asarray(results)
+    else:
+        return results[0]

@@ -1,4 +1,5 @@
 import onnxruntime as ort
+import numpy as np
 import warnings
 warnings.filterwarnings("ignore", message=".*CUDAExecutionProvider.*")
 
@@ -31,3 +32,4 @@ def create_session(model_file):
     }
 
     return session, config
+

@@ -1,3 +1,4 @@
+import rasterio
 
 def draw_boxes(image_path, output_path, bboxes, scores=None):
     from PIL import Image, ImageDraw
@@ -19,3 +20,14 @@ def draw_boxes(image_path, output_path, bboxes, scores=None):
             draw.text((x1, y1 - 10), text, fill=color)  # Text above the bounding box
 
     img.save(output_path)
+
+def save_raster(img, output, original_raster):
+    profile = original_raster.profile
+    profile.update({
+        "width": img.shape[2],
+        "height": img.shape[1],
+    })
+
+    with rasterio.open(output, "w", **profile) as dst:
+        dst.write(img)
+        print(f"Wrote {output}")
