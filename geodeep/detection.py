@@ -3,6 +3,7 @@
 import numpy as np
 from typing import List
 from .utils import xywh2xyxy
+from .ckdtree import cKDTree
 
 def preprocess(model_input):
     s = model_input.shape
@@ -63,6 +64,18 @@ def extract_bsc(outputs):
     classes = np.argmax(outputs[:, 5:], axis=1)
 
     return boxes, scores, classes
+
+def compute_centers(outputs):
+    return np.array([(outputs[:,0] + outputs[:,2]) / 2, (outputs[:,1] + outputs[:,3]) / 2]).T
+
+def compute_areas(outputs):
+    return np.array([(outputs[:,2] - outputs[:,0]) * (outputs[:,3] - outputs[:,1])]).flatten()
+
+def sort_by_area(outputs, reverse=False):
+    areas = compute_areas(outputs)
+    if reverse:
+        areas *= -1
+    return outputs[np.argsort(areas)]
 
 def non_max_suppression_fast(outputs: np.ndarray, iou_threshold: float) -> List:
     """Apply non-maximum suppression to bounding boxes
@@ -157,6 +170,51 @@ def compute_iou(index: int, order: np.ndarray, start_x: np.ndarray, start_y: np.
 
     # Compute the ratio between intersection and union
     return intersection / (areas[index] + areas[order[:-1]] - intersection)
+
+
+def non_max_kdtree(outputs: np.ndarray, iou_threshold: float) -> np.ndarray:
+    """ Remove overlapping bounding boxes using kdtree
+
+    :param outputs: array of bounding boxes in (xyxy format)
+    :param iou_threshold: Threshold for intersection over union
+    :return: Filtered output
+    """
+
+    centers = compute_centers(outputs)
+    bboxes = outputs[:, :4]
+    areas = compute_areas(outputs)
+
+    kdtree = cKDTree(centers)
+    pick_ids = set()
+    removed_ids = set()
+
+    for i, out in enumerate(outputs):
+        if i in removed_ids:
+            continue
+        
+        indices = kdtree.query(centers[i], k=min(10, len(outputs)))
+
+        for j in indices:
+            if j in removed_ids:
+                continue
+
+            if i == j:
+                continue
+            
+            # x_min,y_min,x_max,y_max
+            x_min = max(bboxes[i][0], bboxes[j][0])
+            y_min = max(bboxes[i][1], bboxes[j][1])
+            x_max = min(bboxes[i][2], bboxes[j][2])
+            y_max = min(bboxes[i][3], bboxes[j][3])
+            
+            iou = max(0, x_max - x_min + 1) * max(0, y_max - y_min + 1) / min(areas[i], areas[j])
+
+            if iou > iou_threshold:
+                removed_ids.add(j)
+
+        pick_ids.add(i)
+    print(removed_ids, pick_ids)
+    return outputs[np.asarray(list(pick_ids))]
 
 
 def execute(images, session, config):
