@@ -26,6 +26,7 @@ def save_raster(img, output, original_raster):
     profile.update({
         "width": img.shape[2],
         "height": img.shape[1],
+        "count": img.shape[0],
     })
 
     with rasterio.open(output, "w", **profile) as dst:
