@@ -213,7 +213,7 @@ def non_max_kdtree(outputs: np.ndarray, iou_threshold: float) -> np.ndarray:
                 removed_ids.add(j)
 
         pick_ids.add(i)
-    print(removed_ids, pick_ids)
+
     return outputs[np.asarray(list(pick_ids))]
 
 

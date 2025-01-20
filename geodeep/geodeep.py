@@ -46,7 +46,7 @@ def detect(geotiff, model):
             # save_raster(img, f"tmp/tile_{idx}.tif", raster)
 
             if len(res):
-                bboxes, scores, classes = extract_bsc(res)
+                # bboxes, scores, classes = extract_bsc(res)
                 # save_raster(img, f"tmp/tile_{idx}.tif", raster)
                 # draw_boxes(f"tmp/tile_{idx}.tif", f"tmp/tile_{idx}_out.tif", bboxes, scores)
                 
