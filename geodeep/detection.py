@@ -50,18 +50,28 @@ def preprocess(model_input):
     return model_input
 
 def postprocess(model_output, config):
+    if config['det_type'] == "YOLO_v9":
+        model_output = np.transpose(model_output, (0, 2, 1))
+
     filtered = model_output[model_output[:, :, 4] >= config['det_conf']]
     if not len(filtered):
         return np.empty((0, 6), dtype=np.float32)
     
-    outputs = xywh2xyxy(filtered)
+    if config['det_type'] == 'retinanet':
+        outputs = filtered
+    else:
+        outputs = xywh2xyxy(filtered)
 
     return non_max_suppression_fast(outputs, config['det_iou_thresh'])
 
-def extract_bsc(outputs):
+def extract_bsc(outputs, config):
     boxes = outputs[:, :4].astype(np.int32)
     scores = outputs[:, 4]
-    classes = np.argmax(outputs[:, 5:], axis=1)
+
+    if config['det_type'] == "YOLO_v9":
+        classes = np.argmax(outputs[:, 4:], axis=1)
+    else:
+        classes = np.argmax(outputs[:, 5:], axis=1)
 
     return boxes, scores, classes
 
@@ -218,15 +228,13 @@ def non_max_kdtree(outputs: np.ndarray, iou_threshold: float) -> np.ndarray:
 
 
 def execute(images, session, config):
-    is_batched = len(images.shape) == 4
     images = preprocess(images)
-    outs = session.run(None, {config['input_name']: images})
 
-    results = []
-    for out in outs:
-        results.append(postprocess(out, config))
-    
-    if is_batched:
-        return np.asarray(results)
+    outs = session.run(None, {config['input_name']: images})
+    if config['det_type'] == 'retinanet':
+        stacked = np.hstack((outs[0], outs[1][:,np.newaxis], outs[2][:,np.newaxis]))
+        out = stacked[np.newaxis, :, :]
     else:
-        return results[0]
+        out = outs[0]
+
+    return postprocess(out, config)

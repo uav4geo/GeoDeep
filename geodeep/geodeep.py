@@ -59,7 +59,7 @@ def detect(geotiff, model):
         outputs = sort_by_area(outputs, reverse=True)
         outputs = non_max_kdtree(outputs, config['det_iou_thresh'])
 
-        bboxes, scores, classes = extract_bsc(outputs)
+        bboxes, scores, classes = extract_bsc(outputs, config)
 
         from .debug import draw_boxes
         draw_boxes(geotiff, "tmp/out.tif", bboxes, scores)

@@ -6,6 +6,7 @@ logger = logging.getLogger("geodeep")
 MODELS = {
     'cars': 'https://huggingface.co/datasets/UAV4GEO/GeoDeep-Models/resolve/main/car_aerial_detection_yolo7_ITCVD_deepness.onnx',
     'trees': 'https://huggingface.co/datasets/UAV4GEO/GeoDeep-Models/resolve/main/yolov9_trees.onnx',
+    'trees2': 'tmp/tree.quant.onnx',
     # TODO add more
 }
 
@@ -31,6 +32,8 @@ def get_model_file(name):
         url = name
     else:
         url = MODELS.get(name)
+        if not url.startswith("http"):
+            return url
     
     if not url:
         raise Exception(f"Invalid model: {name}, not in {list_models()}")
