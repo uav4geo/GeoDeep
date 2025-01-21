@@ -5,8 +5,12 @@ logger = logging.getLogger("geodeep")
 
 MODELS = {
     'cars': 'https://huggingface.co/datasets/UAV4GEO/GeoDeep-Models/resolve/main/car_aerial_detection_yolo7_ITCVD_deepness.onnx',
-    'trees': 'https://huggingface.co/datasets/UAV4GEO/GeoDeep-Models/resolve/main/yolov9_trees.onnx',
-    'trees2': 'tmp/tree.quant.onnx',
+    'trees': 'https://huggingface.co/datasets/UAV4GEO/GeoDeep-Models/resolve/main/tree_crown_detection_retinanet_deepforest.onnx',
+    'birds': 'scripts/bird.quant.onnx',
+
+    # Experimental
+    'trees_yolov9': 'https://huggingface.co/datasets/UAV4GEO/GeoDeep-Models/resolve/main/yolov9_trees.onnx',
+
     # TODO add more
 }
 
