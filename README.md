@@ -2,6 +2,8 @@
 
 A fast, lightweight Python library for AI object detection in geospatial rasters (GeoTIFFs). 
 
+![Image](https://github.com/user-attachments/assets/9dc7b98b-9233-458b-976e-c619c3a608cf)
+
 ## Install
 
 ```bash
