@@ -6,7 +6,7 @@ build-backend = "hatchling.build"
 requires-python = ">=3.8"
 name = "geodeep"
 description = "Free and open source library for AI object detection in geospatial rasters"
-version = "0.9.2"
+version = "0.9.3"
 readme = "README.md"
 license = { file = "LICENSE" }
 authors = [
@@ -36,7 +36,7 @@ classifiers = [
 
 dependencies = [
     "rasterio>=1.2.9",
-    "onnxruntime>=1.20.1",
+    "onnxruntime>=1.19.2",
 ]
 
 [project.scripts]
