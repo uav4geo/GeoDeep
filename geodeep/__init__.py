@@ -9,8 +9,6 @@ Installation:
 Quickstart:
 -----------
 
-TODO
-
 
 Examples:
 ---------
