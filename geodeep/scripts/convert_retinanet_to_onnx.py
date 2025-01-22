@@ -4,7 +4,7 @@ import torch
 import json
 import os
 import sys
-sys.path.append("..")
+sys.path.append(os.path.join(os.path.dirname(__file__), "..", ".."))
 from torchvision.models.detection.retinanet import RetinaNet
 from torchvision.models.detection import retinanet_resnet50_fpn
 from torchvision.models.detection.retinanet import RetinaNet_ResNet50_FPN_Weights

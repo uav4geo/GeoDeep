@@ -4,10 +4,10 @@ try:
     from geodeep import detect, models, simple_progress
 except ImportError:
     import os
-    sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
+    sys.path.append(os.path.join(os.path.dirname(__file__), "..", ".."))
     from geodeep import detect, models, simple_progress
 
-if __name__ == "__main__":
+def main():
     parser = argparse.ArgumentParser(prog="geodeep", description="AI object detection in geospatial rasters ")
     parser.add_argument(
         "geotiff", 
@@ -72,7 +72,7 @@ if __name__ == "__main__":
             print("dev")
         exit(0)
     
-    if args.model == "" or args.geotiff == "":
+    if not args.model or not args.geotiff:
         parser.print_help(sys.stderr)
         exit(1)
     
@@ -86,3 +86,6 @@ if __name__ == "__main__":
         print(f"Wrote {args.geojson_output}")
     else:
         print(output)
+
+if __name__ == "__main__":
+    main()

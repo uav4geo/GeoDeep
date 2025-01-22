@@ -40,7 +40,7 @@ dependencies = [
 ]
 
 [project.scripts]
-geodeep = "scripts.main:main"
+geodeep = "geodeep.scripts.main:main"
 
 
 [project.optional-dependencies]
@@ -53,6 +53,9 @@ dev = [
     "onnxsim==0.4.36",
     "onnx==1.17.0",
 ]
+
+[tool.hatch.build.targets.wheel]
+packages = ["geodeep"]
 
 [project.urls]
 Homepage = "https://github.com/uav4geo/GeoDeep"
