@@ -1,7 +1,5 @@
 # GeoDeep
 
-![GeoDeep Logo](https://github.com/user-attachments/assets/3d3222ae-2a8c-4173-9a4e-d8dd615818c0)
-
 A fast, lightweight Python library for AI object detection in geospatial rasters (GeoTIFFs). 
 
 ## Install
