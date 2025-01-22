@@ -36,7 +36,7 @@ See also `geodeep --help`.
 
 ### From Python
 
-```bash
+```python
 from geodeep import detect
 bboxes, scores, classes = detect('orthophoto.tif', 'cars')
 print(bboxes) # <-- [[x_min, y_min, x_max, y_max], [...]]
@@ -44,6 +44,13 @@ print(scores) # <-- [score, ...]
 print(classes) # <-- [(id: int, label: str), ...]
 
 geojson = detect('orthophoto.tif', 'cars', output_type="geojson")
+```
+
+Models by default will be cached in `~/.cache/geodeep`. You can change that with:
+
+```python
+from geodeep import models
+models.cache_dir = "your/cache/path"
 ```
 
 ## Models
@@ -68,6 +75,12 @@ Compared to other software packages (e.g. [Deepness](https://github.com/PUTvisio
 ## Contributing
 
 We welcome contributions! Pull requests are welcome.
+
+## Roadmap Ideas
+
+ - [ ] Train more detection models
+ - [ ] Add support for semantic segmentation models
+ - [ ] Faster inference optimizations
 
 ## Support the Project
 
