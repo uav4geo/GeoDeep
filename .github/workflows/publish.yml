@@ -1,0 +1,32 @@
+name: Publish package
+# Publish to PyPI when new release on GitHub, if tests pass
+on:
+  release:
+    types: [created]
+  workflow_dispatch:
+  # Manual trigger in case the release needs to be rerun
+
+jobs:
+
+  publish:
+    name: Upload release to PyPI
+    runs-on: ubuntu-latest
+    environment:
+      name: pypi
+      url: https://pypi.org/p/geodeep
+    permissions:
+      id-token: write
+    steps:
+    - uses: actions/checkout@v4
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.8'
+    - name: Install dependencies
+      run: |
+        pip install build
+    - name: Build
+      run: |
+        python -m build
+    - name: Publish package distributions to PyPI
+      uses: pypa/gh-action-pypi-publish@release/v1
