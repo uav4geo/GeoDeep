@@ -1,7 +1,7 @@
 import argparse
 import sys
 try:
-    from geodeep import detect, models, simple_progress
+    from geodeep import detect, models, simple_progress, __version__
 except ImportError:
     import os
     sys.path.append(os.path.join(os.path.dirname(__file__), "..", ".."))
@@ -62,14 +62,7 @@ def main():
         exit(0)
     
     if args.version:
-        import warnings
-        warnings.simplefilter("ignore", DeprecationWarning)
-
-        import pkg_resources
-        try:
-            print(pkg_resources.get_distribution('geodeep').version)
-        except:
-            print("dev")
+        print(__version__)
         exit(0)
     
     if not args.model or not args.geotiff:
