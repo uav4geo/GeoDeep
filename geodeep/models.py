@@ -1,7 +1,5 @@
 import os
 import urllib.request
-import logging
-logger = logging.getLogger("geodeep")
 
 MODELS = {
     'cars': 'https://huggingface.co/datasets/UAV4GEO/GeoDeep-Models/resolve/main/car_aerial_detection_yolo7_ITCVD_deepness.onnx',
@@ -31,7 +29,7 @@ cache_dir = os.path.join(get_user_cache_dir(), "geodeep")
 def list_models():
     return MODELS.keys()
 
-def get_model_file(name):
+def get_model_file(name, progress_callback=None):
     if name.startswith("http"):
         url = name
     else:
@@ -44,10 +42,12 @@ def get_model_file(name):
     
     filename = os.path.basename(url)
     model_path = os.path.join(cache_dir, filename)
+    def progress(block_num, block_size, total_size):
+        if progress_callback is not None and total_size > 0:
+            progress_callback(f"Downloading model", block_num * block_size / total_size * 5)
 
     if not os.path.isfile(model_path):
         os.makedirs(cache_dir, exist_ok=True)
-        logger.warning(f"Downloading {url} to {model_path}")
-        urllib.request.urlretrieve(url, model_path)
+        urllib.request.urlretrieve(url, model_path, progress)
     
     return os.path.abspath(model_path)

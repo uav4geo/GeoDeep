@@ -20,7 +20,7 @@ def detect(geotiff, model, output_type='bsc', progress_callback=None):
             progress_callback(text, current_progress)
     
     p("Loading model")
-    session, config = create_session(get_model_file(model))
+    session, config = create_session(get_model_file(model, progress_callback))
     p("Model loaded", 5)
 
     with rasterio.open(geotiff, 'r') as raster:

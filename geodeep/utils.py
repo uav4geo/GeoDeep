@@ -17,5 +17,6 @@ def simple_progress(text, perc):
     fill = int(bar_chars * f)
     empty = bar_chars - fill
     bar = f"{'█' * fill}{'-' * empty}"
-
-    print(f"\r\033[K[{bar}] {perc:.1f}% {text}", end='' if perc < 100 else '\n', flush=True)
+    print(f"\r\033[K[{bar}] {perc:.1f}% {text}", end='', flush=True)
+    if perc == 100:
+        print("\r\033[K")
