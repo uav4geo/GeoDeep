@@ -61,6 +61,9 @@ docs = [
 [tool.hatch.build.targets.wheel]
 packages = ["geodeep"]
 
+[tool.hatch.build.targets.sdist]
+packages = ["geodeep"]
+
 [project.urls]
 Homepage = "https://github.com/uav4geo/GeoDeep"
 Source = "https://github.com/uav4geo/GeoDeep"
