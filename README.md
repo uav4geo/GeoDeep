@@ -15,7 +15,7 @@ pip install -U geodeep
 ### From the command line
 
 ```bash
-geodeep [geotiff] [modelID or path to ONNX model]
+geodeep [geotiff] [model ID or path to ONNX model]
 ```
 
 Example:
@@ -26,7 +26,7 @@ geodeep orthophoto.tif cars
 
 Here GeoDeep will find cars in the orthophoto and write the result as a GeoJSON file containing the bounding boxes, confidence scores and class labels.
 
-A list of up-to-date modelID can be retrieved via:
+A list of up-to-date model IDs can be retrieved via:
 
 ```bash
 geodeep --list-models
