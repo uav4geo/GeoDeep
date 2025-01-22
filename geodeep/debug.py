@@ -16,8 +16,8 @@ def draw_boxes(image_path, output_path, bboxes, scores=None):
         draw.rectangle([x1, y1, x2, y2], outline=color, width=2)
 
         if score is not None:
-            text = f"{score:.2f}"  # Score text
-            draw.text((x1, y1 - 10), text, fill=color)  # Text above the bounding box
+            text = f"{score:.2f}"
+            draw.text((x1, y1 - 10), text, fill=color)
 
     img.save(output_path)
 

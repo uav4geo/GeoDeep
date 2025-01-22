@@ -1,0 +1,73 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+requires-python = ">=3.8"
+name = "geodeep"
+description = "Free and open source library for AI object detection in geospatial rasters"
+version = "0.9.0"
+readme = "README.md"
+license = { file = "LICENSE" }
+authors = [
+    { name = "Piero Toffanin", email = "pt@uav4geo.com" },
+    { name = "GeoDeep Authors" },
+]
+maintainers = [
+    { name = "Piero Toffanin", email = "pt@uav4geo.com" },
+    { name = "GeoDeep Authors" },
+]
+keywords = [
+    "Python",
+    "object-detection",
+    "geospatial",
+    "geotiff",
+]
+classifiers = [
+    "Operating System :: OS Independent",
+    "License :: OSI Approved :: GNU Affero General Public License v3",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",    
+]
+
+dependencies = [
+    "rasterio>=1.2.9",
+    "onnxruntime>=1.20.1",
+]
+
+[project.scripts]
+geodeep = "scripts.main:main"
+
+
+[project.optional-dependencies]
+test = [
+    "pytest >=7.2.0",
+]
+dev = [
+    "pillow>=11.1.0",
+    "torch==2.5.1",
+    "onnxsim==0.4.36",
+    "onnx==1.17.0",
+]
+
+[project.urls]
+Homepage = "https://github.com/uav4geo/GeoDeep"
+Source = "https://github.com/uav4geo/GeoDeep"
+Documentation = "https://github.com/uav4geo/GeoDeep"
+Tracker = "https://github.com/uav4geo/GeoDeep/issues"
+History = "https://github.com/uav4geo/GeoDeep/releases"
+
+[tool.hatch.envs.default]
+features = [
+    "test",
+]
+
+[tool.hatch.envs.default.scripts]
+test = "pytest {args}"
+
+[[tool.hatch.envs.all.matrix]]
+python = ["3.8", "3.9", "3.10", "3.11", "3.12"]
