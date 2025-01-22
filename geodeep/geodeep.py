@@ -3,11 +3,14 @@ import numpy as np
 from .slidingwindow import generate_for_size
 from .models import get_model_file
 from .inference import create_session
-from .detection import execute, non_max_suppression_fast, extract_bsc, non_max_kdtree, sort_by_area
+from .detection import execute, non_max_suppression_fast, extract_bsc, non_max_kdtree, sort_by_area, to_geojson
 import logging
 logger = logging.getLogger("geodeep")
 
-def detect(geotiff, model):
+
+
+
+def detect(geotiff, model, output_type='bsc'):
     session, config = create_session(get_model_file(model))
 
     with rasterio.open(geotiff, 'r') as raster:
@@ -46,7 +49,7 @@ def detect(geotiff, model):
             # save_raster(img, f"tmp/tile_{idx}.tif", raster)
 
             if len(res):
-                # bboxes, scores, classes = extract_bsc(res)
+                # bboxes, scores, classes = extract_bsc(res, config)
                 # save_raster(img, f"tmp/tile_{idx}.tif", raster)
                 # draw_boxes(f"tmp/tile_{idx}.tif", f"tmp/tile_{idx}_out.tif", bboxes, scores)
                 
@@ -59,10 +62,13 @@ def detect(geotiff, model):
         outputs = sort_by_area(outputs, reverse=True)
         outputs = non_max_kdtree(outputs, config['det_iou_thresh'])
 
-        bboxes, scores, classes = extract_bsc(outputs, config)
-
-        from .debug import draw_boxes
-        draw_boxes(geotiff, "tmp/out.tif", bboxes, scores)
-
-    return []
+        if output_type == 'raw':
+            return outputs
+        elif output_type == 'bsc':
+            bboxes, scores, classes = extract_bsc(outputs, config)
+            # from .debug import draw_boxes
+            # draw_boxes(geotiff, "tmp/out.tif", bboxes, scores)
+            return bboxes, scores, classes
+        elif output_type == 'geojson':
+            return to_geojson(raster, outputs, config)
 

@@ -1,6 +1,8 @@
 # Originally edited from https://github.com/PUTvision/qgis-plugin-deepness
-
+import rasterio
+import rasterio.warp
 import numpy as np
+import json
 from typing import List
 from .utils import xywh2xyxy
 from .ckdtree import cKDTree
@@ -73,7 +75,7 @@ def extract_bsc(outputs, config):
     else:
         classes = np.argmax(outputs[:, 5:], axis=1)
 
-    return boxes, scores, classes
+    return boxes.tolist(), scores.tolist(), [(int(c), config['class_names'].get(str(c), 'unknown')) for c in classes]
 
 def compute_centers(outputs):
     return np.array([(outputs[:,0] + outputs[:,2]) / 2, (outputs[:,1] + outputs[:,3]) / 2]).T
@@ -238,3 +240,43 @@ def execute(images, session, config):
         out = outs[0]
 
     return postprocess(out, config)
+
+
+def to_geojson(raster, outputs, config):
+    bboxes, scores, classes = extract_bsc(outputs, config)
+
+    rast_coords = [[
+        (b[0], b[1]), # TL
+        (b[2], b[1]), # TR
+        (b[2], b[3]), # BR
+        (b[0], b[3]), # BL
+    ] for b in bboxes]
+    spatial_coords = [raster.xy(y, x) for c in rast_coords for x,y in c]
+    xs, ys = zip(*spatial_coords)
+    tx, ty = rasterio.warp.transform(raster.crs, "EPSG:4326", xs, ys)
+    feats = []
+
+    for i in range(len(bboxes)):
+        bbox = bboxes[i]
+        score = scores[i]
+        cls = classes[i]
+        cid = i * 4
+
+        feats.append({
+            "type": "Feature",
+            "geometry": {
+                "type": "Polygon",
+                "coordinates": [
+                    [[tx[cid + i], ty[cid + i]] for i in range(4)] + [[tx[cid], ty[cid]]]
+                ]
+            },
+            "properties": {
+                "score": score,
+                "class": cls
+            }
+        })
+
+    return json.dumps({
+        "type": "FeatureCollection",
+        "features": feats
+    }, indent=2)
