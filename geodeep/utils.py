@@ -11,3 +11,11 @@ def xywh2xyxy(x):
     y[:, 3] = x[:, 1] + x[:, 3] / 2  # bottom right y
     return y
 
+def simple_progress(text, perc):
+    bar_chars = 20
+    f = perc / 100
+    fill = int(bar_chars * f)
+    empty = bar_chars - fill
+    bar = f"{'█' * fill}{'-' * empty}"
+
+    print(f"\r\033[K[{bar}] {perc:.1f}% {text}", end='' if perc < 100 else '\n', flush=True)

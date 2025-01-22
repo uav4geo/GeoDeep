@@ -8,10 +8,20 @@ import logging
 logger = logging.getLogger("geodeep")
 
 
-
-
-def detect(geotiff, model, output_type='bsc'):
+def detect(geotiff, model, output_type='bsc', progress_callback=None):
+    """
+    Perform object detection on a GeoTIFF
+    """
+    current_progress = 0
+    def p(text, perc=0):
+        nonlocal current_progress
+        current_progress += perc
+        if progress_callback is not None:
+            progress_callback(text, current_progress)
+    
+    p("Loading model")
     session, config = create_session(get_model_file(model))
+    p("Model loaded", 5)
 
     with rasterio.open(geotiff, 'r') as raster:
         if not raster.is_tiled:
@@ -35,8 +45,12 @@ def detect(geotiff, model, output_type='bsc'):
         indexes = raster.indexes
         if len(indexes) > 1 and raster.colorinterp[-1] == rasterio.enums.ColorInterp.alpha:
             indexes = indexes[:-1]
+
+        num_wins = len(windows)
+        progress_per_win = 90 / num_wins if num_wins > 0 else 0
         
         for idx, w in enumerate(windows):
+            p(f"Processing tile {idx}/{num_wins}", progress_per_win)
             img = raster.read(indexes=indexes, window=w, boundless=True, fill_value=0, out_shape=(
                 len(indexes),
                 config['tiles_size'],
@@ -56,6 +70,8 @@ def detect(geotiff, model, output_type='bsc'):
                 # Scale/shift bbox coordinates from tile space to raster space
                 res[:,0:4] = res[:,0:4] * scale_factor + np.array([w.col_off, w.row_off, w.col_off, w.row_off])
                 outputs.append(res)
+        
+        p("Finalizing", 5)
 
         outputs = np.vstack(outputs)
         outputs = non_max_suppression_fast(outputs, config['det_iou_thresh'])
