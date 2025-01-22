@@ -15,7 +15,7 @@ pip install -U geodeep
 ### From the command line
 
 ```bash
-geodeep [input_geotiff] [modelID or path to ONNX model]
+geodeep [geotiff] [modelID or path to ONNX model]
 ```
 
 Example:

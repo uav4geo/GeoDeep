@@ -34,10 +34,11 @@ def get_model_file(name, progress_callback=None):
         url = name
     else:
         url = MODELS.get(name)
-        if not url:
+        if not url and not os.path.isfile(name):
             raise Exception(f"Invalid model: {name}, not in {list_models()}")
-        if not url.startswith("http"):
-            return url
+
+        if url is None and os.path.isfile(name):
+            return name
     
     
     filename = os.path.basename(url)
