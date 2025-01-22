@@ -63,7 +63,7 @@ params = {
     'det_iou_thresh': 0.4,
     'det_type': 'retinanet',
     'resolution': RESOLUTION, 
-    'class_names': json.dumps(CLASS_NAMES), 
+    'class_names': CLASS_NAMES, 
     'det_conf': 0.3, 
     'tiles_overlap': 5, 
 }

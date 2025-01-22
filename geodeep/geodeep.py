@@ -72,12 +72,14 @@ def detect(geotiff, model, output_type='bsc', progress_callback=None):
                 outputs.append(res)
         
         p("Finalizing", 5)
-
-        outputs = np.vstack(outputs)
-        outputs = non_max_suppression_fast(outputs, config['det_iou_thresh'])
-        outputs = sort_by_area(outputs, reverse=True)
-        outputs = non_max_kdtree(outputs, config['det_iou_thresh'])
-
+        if len(outputs):
+            outputs = np.vstack(outputs)
+            outputs = non_max_suppression_fast(outputs, config['det_iou_thresh'])
+            outputs = sort_by_area(outputs, reverse=True)
+            outputs = non_max_kdtree(outputs, config['det_iou_thresh'])
+        else:
+            outputs = np.array([])
+        
         if output_type == 'raw':
             return outputs
         elif output_type == 'bsc':

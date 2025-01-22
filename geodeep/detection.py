@@ -67,6 +67,9 @@ def postprocess(model_output, config):
     return non_max_suppression_fast(outputs, config['det_iou_thresh'])
 
 def extract_bsc(outputs, config):
+    if not len(outputs):
+        return [], [], []
+    
     boxes = outputs[:, :4].astype(np.int32)
     scores = outputs[:, 4]
 
@@ -244,7 +247,12 @@ def execute(images, session, config):
 
 def to_geojson(raster, outputs, config):
     bboxes, scores, classes = extract_bsc(outputs, config)
-
+    if not len(bboxes):
+        return json.dumps({
+            "type": "FeatureCollection",
+            "features": []
+        }, indent=2)
+    
     rast_coords = [[
         (b[0], b[1]), # TL
         (b[2], b[1]), # TR

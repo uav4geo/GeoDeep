@@ -58,7 +58,7 @@ def main():
     args = parser.parse_args()
 
     if args.list_models:
-        print([k for k in models.list_models()])
+        print(models.list_models())
         exit(0)
     
     if args.version:
@@ -70,8 +70,8 @@ def main():
         exit(1)
     
     output = detect(args.geotiff, args.model, 
-                    output_type=args.output_type, 
-                    progress_callback=simple_progress if not args.quiet else None)
+                output_type=args.output_type, 
+                progress_callback=simple_progress if not args.quiet else None)
     
     if args.output_type == "geojson":
         with open(args.geojson_output, "w") as f:

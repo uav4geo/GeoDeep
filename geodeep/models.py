@@ -27,18 +27,18 @@ def get_user_cache_dir():
 cache_dir = os.path.join(get_user_cache_dir(), "geodeep")
 
 def list_models():
-    return MODELS.keys()
+    return list(MODELS.keys())
 
 def get_model_file(name, progress_callback=None):
     if name.startswith("http"):
         url = name
     else:
         url = MODELS.get(name)
+        if not url:
+            raise Exception(f"Invalid model: {name}, not in {list_models()}")
         if not url.startswith("http"):
             return url
     
-    if not url:
-        raise Exception(f"Invalid model: {name}, not in {list_models()}")
     
     filename = os.path.basename(url)
     model_path = os.path.join(cache_dir, filename)
