@@ -272,7 +272,7 @@ def to_geojson(raster, outputs, config):
             },
             "properties": {
                 "score": score,
-                "class": cls
+                "class": cls[1]
             }
         })
 
