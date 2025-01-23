@@ -1,6 +1,6 @@
 # GeoDeep
 
-A fast, lightweight Python library for AI object detection in geospatial rasters (GeoTIFFs). 
+A fast, easy to use, lightweight Python library for AI object detection in geospatial rasters (GeoTIFFs). Pre-built models included.
 
 ![Image](https://github.com/user-attachments/assets/9dc7b98b-9233-458b-976e-c619c3a608cf)
 
