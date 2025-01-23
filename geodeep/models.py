@@ -1,5 +1,6 @@
 import os
 import urllib.request
+import time
 
 MODELS = {
     'cars': 'https://huggingface.co/datasets/UAV4GEO/GeoDeep-Models/resolve/main/car_aerial_detection_yolo7_ITCVD_deepness.onnx',
@@ -40,15 +41,25 @@ def get_model_file(name, progress_callback=None):
         if url is None and os.path.isfile(name):
             return name
     
-    
-    filename = os.path.basename(url)
-    model_path = os.path.join(cache_dir, filename)
-    def progress(block_num, block_size, total_size):
-        if progress_callback is not None and total_size > 0:
-            progress_callback(f"Downloading model", block_num * block_size / total_size * 5)
+    try:
+        filename = os.path.basename(url)
+        model_path = os.path.join(cache_dir, filename)
+        last_update = 0
 
-    if not os.path.isfile(model_path):
-        os.makedirs(cache_dir, exist_ok=True)
-        urllib.request.urlretrieve(url, model_path, progress)
-    
-    return os.path.abspath(model_path)
+        def progress(block_num, block_size, total_size):
+            nonlocal last_update
+            now = time.time()
+            if progress_callback is not None and total_size > 0 and now - last_update >= 1:
+                progress_callback(f"Downloading model", block_num * block_size / total_size * 5)
+                last_update = now
+
+        if not os.path.isfile(model_path):
+            os.makedirs(cache_dir, exist_ok=True)
+            urllib.request.urlretrieve(url, model_path, progress)
+        
+        return os.path.abspath(model_path)
+    except Exception as e:
+        # Cleanup possibly corrupted file
+        if os.path.isfile(model_path):
+            os.unlink(model_path)
+        raise e
