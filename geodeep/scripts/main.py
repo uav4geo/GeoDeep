@@ -44,6 +44,13 @@ def main():
         help="Print list of available models and exit"
     )
     parser.add_argument(
+        "--confidence-threshold", "-c",
+        type=float,
+        default=None,
+        required=False,
+        help="Confidence threshold for detection (overrides model default)."
+    )    
+    parser.add_argument(
         "--quiet", "-q",
         action="store_true",
         required=False,
