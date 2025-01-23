@@ -97,3 +97,5 @@ GeoDeep was inspired and uses some code from [Deepness](https://github.com/PUTvi
  ## License
 
 The code in this repository is licensed under the AGPLv3.
+
+Made with ❤️ by UAV4GEO
