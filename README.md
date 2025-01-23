@@ -72,6 +72,10 @@ Instructions coming soon. The basic idea is to create an ONNX model (see the [re
 
 Compared to other software packages (e.g. [Deepness](https://github.com/PUTvision/qgis-plugin-deepness)), GeoDeep relies only on two dependencies, `rasterio` and `onnxruntime`. This makes it simple and lightweight.
 
+## Does this need a GPU?
+
+You do not! Models are tuned to run fast on the CPU.
+
 ## Contributing
 
 We welcome contributions! Pull requests are welcome.
