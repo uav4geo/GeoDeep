@@ -26,12 +26,6 @@ geodeep orthophoto.tif cars
 
 Here GeoDeep will find cars in the orthophoto and write the result as a GeoJSON file containing the bounding boxes, confidence scores and class labels.
 
-Specify a custom confidence threshold for detections with `--confidence-threshold` (`-c`) argument. Example:
-
-```bash
-geodeep orthophoto.tif cars --confidence-threshold 0.5
-```
-
 A list of up-to-date model IDs can be retrieved via:
 
 ```bash

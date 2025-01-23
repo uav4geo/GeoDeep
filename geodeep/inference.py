@@ -4,7 +4,7 @@ import warnings
 import json
 warnings.filterwarnings("ignore", message=".*CUDAExecutionProvider.*")
 
-def create_session(model_file, confidence_threshold=None):
+def create_session(model_file):
     options = ort.SessionOptions()
     options.graph_optimization_level = ort.GraphOptimizationLevel.ORT_ENABLE_ALL
 
@@ -31,10 +31,6 @@ def create_session(model_file, confidence_threshold=None):
         'input_shape': inputs[0].shape,
         'input_name': inputs[0].name,
     }
-
-    # Override the confidence threshold if specified
-    if confidence_threshold is not None:
-        config['det_conf'] = confidence_threshold
     
     return session, config
 

@@ -8,7 +8,7 @@ import logging
 logger = logging.getLogger("geodeep")
 
 
-def detect(geotiff, model, output_type='bsc', confidence_threshold=None, progress_callback=None):
+def detect(geotiff, model, output_type='bsc', conf_threshold=None, progress_callback=None):
     """
     Perform object detection on a GeoTIFF
     """
@@ -20,9 +20,13 @@ def detect(geotiff, model, output_type='bsc', confidence_threshold=None, progres
             progress_callback(text, current_progress)
     
     p("Loading model")
-    session, config = create_session(get_model_file(model, progress_callback), confidence_threshold=confidence_threshold)
+    session, config = create_session(get_model_file(model, progress_callback))
     p("Model loaded", 5)
 
+    # Override defaults if needed
+    if conf_threshold is not None:
+        config['det_conf'] = conf_threshold
+        
     with rasterio.open(geotiff, 'r') as raster:
         if not raster.is_tiled:
             logger.warning(f"{geotiff} is not tiled. I/O performance will be affected. Consider adding tiles.")

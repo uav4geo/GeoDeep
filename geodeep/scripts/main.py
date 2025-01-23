@@ -44,11 +44,11 @@ def main():
         help="Print list of available models and exit"
     )
     parser.add_argument(
-        "--confidence-threshold", "-c",
+        "--conf-threshold", "-c",
         type=float,
         default=None,
         required=False,
-        help="Confidence threshold for detection (overrides model default)."
+        help="Confidence threshold [0-1]. Default: model default"
     )    
     parser.add_argument(
         "--quiet", "-q",
@@ -78,6 +78,7 @@ def main():
     
     output = detect(args.geotiff, args.model, 
                 output_type=args.output_type, 
+                conf_threshold=args.conf_threshold,
                 progress_callback=simple_progress if not args.quiet else None)
     
     if args.output_type == "geojson":
