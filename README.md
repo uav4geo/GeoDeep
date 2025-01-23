@@ -74,7 +74,7 @@ Compared to other software packages (e.g. [Deepness](https://github.com/PUTvisio
 
 ## Does this need a GPU?
 
-You do not! Models are tuned to run fast on the CPU.
+It does not! Models are tuned to run fast on the CPU.
 
 ## Contributing
 
