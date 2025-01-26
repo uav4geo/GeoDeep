@@ -28,7 +28,7 @@ def main():
         default="geojson",
         choices=["geojson", "bsc", "raw"], 
         required=False, 
-        help='Type of output. One of: %(choices)s'
+        help='Type of output. One of: %(choices)s. Default: %(default)s'
     )
     parser.add_argument(
         "--geojson-output", "-o", 

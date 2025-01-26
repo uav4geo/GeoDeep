@@ -52,7 +52,7 @@ def preprocess(model_input):
     return model_input
 
 def postprocess(model_output, config):
-    if config['det_type'] == "YOLO_v9":
+    if config['det_type'] in ["YOLO_v9", "YOLO_v8"]:
         model_output = np.transpose(model_output, (0, 2, 1))
 
     filtered = model_output[model_output[:, :, 4] >= config['det_conf']]
@@ -73,7 +73,7 @@ def extract_bsc(outputs, config):
     boxes = outputs[:, :4].astype(np.int32)
     scores = outputs[:, 4]
 
-    if config['det_type'] == "YOLO_v9":
+    if config['det_type'] in ["YOLO_v9", "YOLO_v8"]:
         classes = np.argmax(outputs[:, 4:], axis=1)
     else:
         classes = np.argmax(outputs[:, 5:], axis=1)
