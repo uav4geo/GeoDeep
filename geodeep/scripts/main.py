@@ -84,6 +84,7 @@ def main():
     if args.output_type == "geojson":
         with open(args.geojson_output, "w") as f:
             f.write(output)
+        print("")
         print(f"Wrote {args.geojson_output}")
     else:
         print(output)
