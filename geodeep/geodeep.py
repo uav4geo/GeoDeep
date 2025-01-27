@@ -3,6 +3,7 @@ import numpy as np
 from .slidingwindow import generate_for_size
 from .models import get_model_file
 from .inference import create_session
+from .utils import estimate_raster_resolution
 from .detection import execute, non_max_suppression_fast, extract_bsc, non_max_kdtree, sort_by_area, to_geojson
 import logging
 logger = logging.getLogger("geodeep")
@@ -29,10 +30,14 @@ def detect(geotiff, model, output_type='bsc', conf_threshold=None, progress_call
         
     with rasterio.open(geotiff, 'r') as raster:
         if not raster.is_tiled:
-            logger.warning(f"{geotiff} is not tiled. I/O performance will be affected. Consider adding tiles.")
+            logger.warning(f"\n{geotiff} is not tiled. I/O performance will be affected. Consider adding tiles.")
         
         # cm/px
         input_res = round(max(abs(raster.transform[0]), abs(raster.transform[4])), 4) * 100
+        if input_res <= 0:
+            input_res = estimate_raster_resolution(raster)
+            logger.warning(f"\n{geotiff} does not seem to have a valid transform, estimated: {input_res}")
+        
         model_res = config['resolution']
         scale_factor = 1
 

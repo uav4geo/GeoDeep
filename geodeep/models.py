@@ -2,13 +2,16 @@ import os
 import urllib.request
 import time
 
+REPO_URL = "https://huggingface.co/datasets/UAV4GEO/GeoDeep-Models/resolve/main/"
+
 MODELS = {
-    'cars': 'https://huggingface.co/datasets/UAV4GEO/GeoDeep-Models/resolve/main/car_aerial_detection_yolo7_ITCVD_deepness.onnx',
-    'trees': 'https://huggingface.co/datasets/UAV4GEO/GeoDeep-Models/resolve/main/tree_crown_detection_retinanet_deepforest.onnx',
+    'cars': 'car_aerial_detection_yolo7_ITCVD_deepness.onnx',
+    'trees': 'tree_crown_detection_retinanet_deepforest.onnx',
 
     # Experimental
-    'trees_yolov9': 'https://huggingface.co/datasets/UAV4GEO/GeoDeep-Models/resolve/main/yolov9_trees.onnx',
-    'birds': 'https://huggingface.co/datasets/UAV4GEO/GeoDeep-Models/resolve/main/bird_detection_retinanet_deepforest.onnx',
+    'trees_yolov9': 'yolov9_trees.onnx',
+    'birds': 'bird_detection_retinanet_deepforest.onnx',
+    'planes': 'model_yolov7_tiny_planes_256.onnx',
 
     # TODO add more
 }
@@ -34,12 +37,14 @@ def get_model_file(name, progress_callback=None):
     if name.startswith("http"):
         url = name
     else:
-        url = MODELS.get(name)
-        if not url and not os.path.isfile(name):
-            raise Exception(f"Invalid model: {name}, not in {list_models()}")
-
-        if url is None and os.path.isfile(name):
-            return name
+        model_filename = MODELS.get(name)
+        if model_filename is None:
+            if os.path.isfile(name):
+                return name
+            else:
+                raise Exception(f"Invalid model: {name}, not in {list_models()}")
+        else:
+            url = REPO_URL + model_filename
     
     try:
         filename = os.path.basename(url)

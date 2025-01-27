@@ -1,5 +1,6 @@
 import numpy as np
 import json
+import math
 
 # Originally edited from https://github.com/PUTvision/qgis-plugin-deepness
 def xywh2xyxy(x):
@@ -20,3 +21,24 @@ def simple_progress(text, perc):
     print(f"\r\033[K[{bar}] {perc:.1f}% {text}", end='', flush=True)
     if perc == 100:
         print("\r\033[K")
+
+def estimate_raster_resolution(raster):
+    if raster.crs is None:
+        return 10 # Wild guess cm/px
+    
+    bounds = raster.bounds
+    width = raster.width
+    height = raster.height
+    crs = raster.crs
+    res_x = (bounds.right - bounds.left) / width
+    res_y = (bounds.top - bounds.bottom) / height
+
+    if crs.is_geographic:
+        center_lat = (bounds.top + bounds.bottom) / 2
+        earth_radius = 6378137.0
+        meters_lon = math.pi / 180 * earth_radius * math.cos(math.radians(center_lat))
+        meters_lat = math.pi / 180 * earth_radius
+        res_x *= meters_lon
+        res_y *= meters_lat
+
+    return round(max(abs(res_x), abs(res_y)), 4) * 100 # cm/px

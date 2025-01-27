@@ -5,7 +5,7 @@ try:
 except ImportError:
     import os
     sys.path.append(os.path.join(os.path.dirname(__file__), "..", ".."))
-    from geodeep import detect, models, simple_progress
+    from geodeep import detect, models, simple_progress, __version__
 
 def main():
     parser = argparse.ArgumentParser(prog="geodeep", description="AI object detection in geospatial rasters ")
