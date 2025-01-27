@@ -36,7 +36,7 @@ def detect(geotiff, model, output_type='bsc', conf_threshold=None, progress_call
         input_res = round(max(abs(raster.transform[0]), abs(raster.transform[4])), 4) * 100
         if input_res <= 0:
             input_res = estimate_raster_resolution(raster)
-            logger.warning(f"\n{geotiff} does not seem to have a valid transform, estimated raster resolution: {input_res}")
+            logger.warning(f"\n{geotiff} does not seem to have a valid transform, estimated raster resolution: {input_res} cm/px")
         
         model_res = config['resolution']
         scale_factor = 1
