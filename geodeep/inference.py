@@ -4,9 +4,12 @@ import warnings
 import json
 warnings.filterwarnings("ignore", message=".*CUDAExecutionProvider.*")
 
-def create_session(model_file):
+def create_session(model_file, max_threads=None):
     options = ort.SessionOptions()
     options.graph_optimization_level = ort.GraphOptimizationLevel.ORT_ENABLE_ALL
+    if max_threads is not None:
+        options.execution_mode = ort.ExecutionMode.ORT_SEQUENTIAL
+        options.intra_op_num_threads = max_threads
 
     providers = [
         'CUDAExecutionProvider',

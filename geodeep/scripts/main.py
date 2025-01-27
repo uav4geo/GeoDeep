@@ -51,6 +51,13 @@ def main():
         help="Confidence threshold [0-1]. Default: model default"
     )    
     parser.add_argument(
+        "--max-threads",
+        type=int,
+        default=None,
+        required=False,
+        help="Maximum number of threads to use. Default: %(default)s"
+    )   
+    parser.add_argument(
         "--quiet", "-q",
         action="store_true",
         required=False,
@@ -79,6 +86,7 @@ def main():
     output = detect(args.geotiff, args.model, 
                 output_type=args.output_type, 
                 conf_threshold=args.conf_threshold,
+                max_threads=args.max_threads,
                 progress_callback=simple_progress if not args.quiet else None)
     
     if args.output_type == "geojson":

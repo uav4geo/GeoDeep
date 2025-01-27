@@ -9,7 +9,7 @@ import logging
 logger = logging.getLogger("geodeep")
 
 
-def detect(geotiff, model, output_type='bsc', conf_threshold=None, progress_callback=None):
+def detect(geotiff, model, output_type='bsc', conf_threshold=None, max_threads=None, progress_callback=None):
     """
     Perform object detection on a GeoTIFF
     """
@@ -21,7 +21,7 @@ def detect(geotiff, model, output_type='bsc', conf_threshold=None, progress_call
             progress_callback(text, current_progress)
     
     p("Loading model")
-    session, config = create_session(get_model_file(model, progress_callback))
+    session, config = create_session(get_model_file(model, progress_callback), max_threads=max_threads)
     p("Model loaded", 5)
 
     # Override defaults if needed
