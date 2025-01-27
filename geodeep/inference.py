@@ -16,7 +16,7 @@ def create_session(model_file, max_threads=None):
         'CPUExecutionProvider'
     ]
 
-    session = ort.InferenceSession(model_file, options=options, providers=providers)
+    session = ort.InferenceSession(model_file, sess_options=options, providers=providers)
     inputs = session.get_inputs()
     if len(inputs) > 1:
         raise Exception("ONNX model: unsupported number of inputs")
