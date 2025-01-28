@@ -55,9 +55,13 @@ def postprocess(model_output, config):
     if config['det_type'] in ["YOLO_v9", "YOLO_v8"]:
         model_output = np.transpose(model_output, (0, 2, 1))
 
-    filtered = model_output[model_output[:, :, 4] >= config['det_conf']]
+    if config['det_type'] in ["YOLO_v9", "YOLO_v8"]:
+        filtered = model_output[np.max(model_output[:, :, 4:], axis=2) >= config['det_conf']]
+    else:
+        filtered = model_output[model_output[:, :, 4] >= config['det_conf']]
+    
     if not len(filtered):
-        return np.empty((0, 6), dtype=np.float32)
+        return np.empty((0, model_output.shape[-1]), dtype=np.float32)
     
     if config['det_type'] == 'retinanet':
         outputs = filtered
