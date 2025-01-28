@@ -68,23 +68,27 @@ def postprocess(model_output, config):
     else:
         outputs = xywh2xyxy(filtered)
 
-    return non_max_suppression_fast(outputs, config['det_iou_thresh'])
+    return non_max_suppression_fast(outputs, config)
 
 def extract_bsc(outputs, config):
     if not len(outputs):
         return [], [], []
     
     boxes = outputs[:, :4].astype(np.int32)
-    
+    scores = extract_scores(outputs, config)
 
     if config['det_type'] in ["YOLO_v9", "YOLO_v8"]:
-        scores = np.max(outputs[:, 4:], axis=1)
         classes = np.argmax(outputs[:, 4:], axis=1)
     else:
-        scores = outputs[:, 4]
         classes = np.argmax(outputs[:, 5:], axis=1)
 
     return boxes.tolist(), scores.tolist(), [(int(c), config['class_names'].get(str(c), 'unknown')) for c in classes]
+
+def extract_scores(outputs, config):
+    if config['det_type'] in ["YOLO_v9", "YOLO_v8"]:
+        return np.max(outputs[:, 4:], axis=1)
+    else:
+        return outputs[:, 4]
 
 def compute_centers(outputs):
     return np.array([(outputs[:,0] + outputs[:,2]) / 2, (outputs[:,1] + outputs[:,3]) / 2]).T
@@ -98,7 +102,7 @@ def sort_by_area(outputs, reverse=False):
         areas *= -1
     return outputs[np.argsort(areas)]
 
-def non_max_suppression_fast(outputs: np.ndarray, iou_threshold: float) -> List:
+def non_max_suppression_fast(outputs: np.ndarray, config: dict) -> List:
     """Apply non-maximum suppression to bounding boxes
 
     Based on:
@@ -108,8 +112,6 @@ def non_max_suppression_fast(outputs: np.ndarray, iou_threshold: float) -> List:
     ----------
     outputs : np.ndarray
         Output array containing bounding boxes in (x1,y1,x2,y2) format and scores
-    iou_threshold : float
-        IoU threshold
 
     Returns
     -------
@@ -120,7 +122,7 @@ def non_max_suppression_fast(outputs: np.ndarray, iou_threshold: float) -> List:
     if len(outputs) == 0:
         return []
 
-    scores = outputs[:, 4]
+    scores = extract_scores(outputs, config)
 
     # coordinates of bounding boxes
     start_x = outputs[:, 0]
@@ -146,7 +148,7 @@ def non_max_suppression_fast(outputs: np.ndarray, iou_threshold: float) -> List:
         pick_ids.append(index)
         ratio = compute_iou(index, order, start_x, start_y, end_x, end_y, areas)
 
-        left = np.where(ratio < iou_threshold)
+        left = np.where(ratio < config['det_iou_thresh'])
         order = order[left]
 
     return outputs[pick_ids]

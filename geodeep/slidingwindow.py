@@ -4,15 +4,16 @@
 import math
 from rasterio.windows import Window
 
-def generate_for_size(width, height, max_window_size, overlap_percent):
+def generate_for_size(width, height, max_window_size, overlap_percent, clip=True):
 	# Create square windows unless an explicit width or height has been specified
     window_size_x = max_window_size
     window_size_y = max_window_size
 
     # If the input data is smaller than the specified window size,
     # clip the window size to the input size on both dimensions
-    window_size_x = min(window_size_x, width)
-    window_size_y = min(window_size_y, height)
+    if clip:
+        window_size_x = min(window_size_x, width)
+        window_size_y = min(window_size_y, height)
 
     # Compute the window overlap and step size
     window_overlap_x = int(math.floor(window_size_x * overlap_percent))

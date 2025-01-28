@@ -9,7 +9,7 @@ import logging
 logger = logging.getLogger("geodeep")
 
 
-def detect(geotiff, model, output_type='bsc', conf_threshold=None, max_threads=None, progress_callback=None):
+def detect(geotiff, model, output_type='bsc', conf_threshold=None, resolution=None, max_threads=None, progress_callback=None):
     """
     Perform object detection on a GeoTIFF
     """
@@ -27,6 +27,9 @@ def detect(geotiff, model, output_type='bsc', conf_threshold=None, max_threads=N
     # Override defaults if needed
     if conf_threshold is not None:
         config['det_conf'] = conf_threshold
+    
+    if resolution is not None:
+        config['resolution'] = resolution
         
     with rasterio.open(geotiff, 'r') as raster:
         if not raster.is_tiled:
@@ -47,7 +50,7 @@ def detect(geotiff, model, output_type='bsc', conf_threshold=None, max_threads=N
         height = raster.shape[0]
         width = raster.shape[1]
 
-        windows = generate_for_size(width, height, config['tiles_size'] * scale_factor, config['tiles_overlap'] / 100.0)
+        windows = generate_for_size(width, height, config['tiles_size'] * scale_factor, config['tiles_overlap'] / 100.0, clip=False)
         outputs = []
 
         # Skip alpha
@@ -69,12 +72,12 @@ def detect(geotiff, model, output_type='bsc', conf_threshold=None, max_threads=N
             res = execute(img, session, config)
 
             # from .debug import draw_boxes, save_raster
-            # save_raster(img, f"tmp/tile_{idx}.tif", raster)
+            # save_raster(img, f"tmp/tiles/tile_{idx}.tif", raster)
 
             if len(res):
                 # bboxes, scores, classes = extract_bsc(res, config)
-                # save_raster(img, f"tmp/tile_{idx}.tif", raster)
-                # draw_boxes(f"tmp/tile_{idx}.tif", f"tmp/tile_{idx}_out.tif", bboxes, scores)
+                # save_raster(img, f"tmp/tiles/tile_{idx}.tif", raster)
+                # draw_boxes(f"tmp/tiles/tile_{idx}.tif", f"tmp/tiles/tile_{idx}_out.tif", bboxes, scores)
                 
                 # Scale/shift bbox coordinates from tile space to raster space
                 res[:,0:4] = res[:,0:4] * scale_factor + np.array([w.col_off, w.row_off, w.col_off, w.row_off])
@@ -83,7 +86,7 @@ def detect(geotiff, model, output_type='bsc', conf_threshold=None, max_threads=N
         p("Finalizing", 5)
         if len(outputs):
             outputs = np.vstack(outputs)
-            outputs = non_max_suppression_fast(outputs, config['det_iou_thresh'])
+            outputs = non_max_suppression_fast(outputs, config)
             outputs = sort_by_area(outputs, reverse=True)
             outputs = non_max_kdtree(outputs, config['det_iou_thresh'])
         else:

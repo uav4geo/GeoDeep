@@ -51,6 +51,13 @@ def main():
         help="Confidence threshold [0-1]. Default: model default"
     )    
     parser.add_argument(
+        "--resolution", "-r",
+        type=float,
+        default=None,
+        required=False,
+        help="Model resolution target (cm/px). Default: model default"
+    )  
+    parser.add_argument(
         "--max-threads",
         type=int,
         default=None,
@@ -86,6 +93,7 @@ def main():
     output = detect(args.geotiff, args.model, 
                 output_type=args.output_type, 
                 conf_threshold=args.conf_threshold,
+                resolution=args.resolution,
                 max_threads=args.max_threads,
                 progress_callback=simple_progress if not args.quiet else None)
     
