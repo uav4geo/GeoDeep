@@ -42,3 +42,10 @@ def estimate_raster_resolution(raster):
         res_y *= meters_lat
 
     return round(max(abs(res_x), abs(res_y)), 4) * 100 # cm/px
+
+def cls_names_map(class_names):
+    # {"0": "tree"} --> {"tree": 0}
+    d = {}
+    for i in class_names:
+        d[class_names[i]] = int(i)
+    return d

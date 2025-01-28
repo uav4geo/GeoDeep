@@ -67,6 +67,10 @@ def postprocess(model_output, config):
         outputs = filtered
     else:
         outputs = xywh2xyxy(filtered)
+    
+    if len(config['det_classes']) > 0:
+        classes = extract_classes(outputs, config)
+        outputs = outputs[np.isin(classes, config['det_classes'])]
 
     return non_max_suppression_fast(outputs, config)
 
@@ -76,12 +80,8 @@ def extract_bsc(outputs, config):
     
     boxes = outputs[:, :4].astype(np.int32)
     scores = extract_scores(outputs, config)
-
-    if config['det_type'] in ["YOLO_v9", "YOLO_v8"]:
-        classes = np.argmax(outputs[:, 4:], axis=1)
-    else:
-        classes = np.argmax(outputs[:, 5:], axis=1)
-
+    classes = extract_classes(outputs, config)
+    
     return boxes.tolist(), scores.tolist(), [(int(c), config['class_names'].get(str(c), 'unknown')) for c in classes]
 
 def extract_scores(outputs, config):
@@ -89,6 +89,12 @@ def extract_scores(outputs, config):
         return np.max(outputs[:, 4:], axis=1)
     else:
         return outputs[:, 4]
+
+def extract_classes(outputs, config):
+    if config['det_type'] in ["YOLO_v9", "YOLO_v8"]:
+        return np.argmax(outputs[:, 4:], axis=1)
+    else:
+        return np.argmax(outputs[:, 5:], axis=1)
 
 def compute_centers(outputs):
     return np.array([(outputs[:,0] + outputs[:,2]) / 2, (outputs[:,1] + outputs[:,3]) / 2]).T

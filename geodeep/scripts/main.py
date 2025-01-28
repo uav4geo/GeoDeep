@@ -58,6 +58,13 @@ def main():
         help="Model resolution target (cm/px). Default: model default"
     )  
     parser.add_argument(
+        "--classes",
+        type=str,
+        default=None,
+        required=False,
+        help="Only detect certain classes (comma separated, e.g. car,plane). Default: detect all"
+    )  
+    parser.add_argument(
         "--max-threads",
         type=int,
         default=None,
@@ -94,6 +101,7 @@ def main():
                 output_type=args.output_type, 
                 conf_threshold=args.conf_threshold,
                 resolution=args.resolution,
+                classes=args.classes,
                 max_threads=args.max_threads,
                 progress_callback=simple_progress if not args.quiet else None)
     

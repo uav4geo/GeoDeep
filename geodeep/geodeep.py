@@ -3,13 +3,15 @@ import numpy as np
 from .slidingwindow import generate_for_size
 from .models import get_model_file
 from .inference import create_session
-from .utils import estimate_raster_resolution
+from .utils import estimate_raster_resolution, cls_names_map
 from .detection import execute, non_max_suppression_fast, extract_bsc, non_max_kdtree, sort_by_area, to_geojson
 import logging
 logger = logging.getLogger("geodeep")
 
 
-def detect(geotiff, model, output_type='bsc', conf_threshold=None, resolution=None, max_threads=None, progress_callback=None):
+def detect(geotiff, model, output_type='bsc', 
+            conf_threshold=None, resolution=None, classes=None, 
+            max_threads=None, progress_callback=None):
     """
     Perform object detection on a GeoTIFF
     """
@@ -30,6 +32,10 @@ def detect(geotiff, model, output_type='bsc', conf_threshold=None, resolution=No
     
     if resolution is not None:
         config['resolution'] = resolution
+    
+    if classes is not None:
+        cn_map = cls_names_map(config['class_names'])
+        config['det_classes'] = [cn_map[cls_name] for cls_name in cn_map if cls_name in classes]
         
     with rasterio.open(geotiff, 'r') as raster:
         if not raster.is_tiled:
