@@ -75,11 +75,13 @@ def extract_bsc(outputs, config):
         return [], [], []
     
     boxes = outputs[:, :4].astype(np.int32)
-    scores = outputs[:, 4]
+    
 
     if config['det_type'] in ["YOLO_v9", "YOLO_v8"]:
+        scores = np.max(outputs[:, 4:], axis=1)
         classes = np.argmax(outputs[:, 4:], axis=1)
     else:
+        scores = outputs[:, 4]
         classes = np.argmax(outputs[:, 5:], axis=1)
 
     return boxes.tolist(), scores.tolist(), [(int(c), config['class_names'].get(str(c), 'unknown')) for c in classes]
