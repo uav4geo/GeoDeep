@@ -64,7 +64,7 @@ models.cache_dir = "your/cache/path"
 | planes       | YOLOv7 tiny model for object detection on satellite images. Based on the [Airbus Aircraft Detection dataset](https://www.kaggle.com/datasets/airbusgeo/airbus-aircrafts-sample-dataset). | 70                     | :heavy_check_mark: | plane       |
 | aerovision   | YOLOv8-m for multi-class detection on aerial images.                                                                                                                                     | 30                     | :heavy_check_mark: | [1]         |
 
-1. small-vehicle, large-vehicle,plane,storage-tank,ship,dock,ground-track-field,soccer-field,tennis-court,swimming-pool,baseball-field,road-circle,basketball-court,bridge,helicopter,crane
+1. small-vehicle, large-vehicle,plane,storage-tank,ship,dock,track-field,soccer-field,tennis-court,swimming-pool,baseball-field,road-circle,basketball-court,bridge,helicopter,crane
 
 All ONNX models are published on https://huggingface.co/datasets/UAV4GEO/GeoDeep-Models
 
