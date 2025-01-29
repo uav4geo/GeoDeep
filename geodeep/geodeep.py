@@ -73,7 +73,7 @@ def detect(geotiff, model, output_type='bsc',
                 len(indexes),
                 config['tiles_size'],
                 config['tiles_size'],
-            ), resampling=rasterio.enums.Resampling.nearest)
+            ), resampling=rasterio.enums.Resampling.bilinear)
             
             res = execute(img, session, config)
 
