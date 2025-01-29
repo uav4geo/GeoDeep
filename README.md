@@ -122,6 +122,10 @@ You can also convert existing ONNX models for use with GeoDeep. See the [retinan
 
 Other architectures can be added. Pull requests welcome!
 
+### Step 4. (Optional) Share Your Model
+
+The most convenient way to deploy your model is to share it. Open a pull request on https://huggingface.co/datasets/UAV4GEO/GeoDeep-Models/tree/main and we'll include it in GeoDeep!
+
 ## Inspect Models
 
 You can inspect an existing model by running:
