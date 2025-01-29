@@ -124,7 +124,7 @@ Other architectures can be added. Pull requests welcome!
 
 ### Step 4. (Optional) Share Your Model
 
-The most convenient way to deploy your model is to share it. Open a pull request on https://huggingface.co/datasets/UAV4GEO/GeoDeep-Models/tree/main and we'll include it in GeoDeep!
+The most convenient way to deploy your model is to share it. Open a pull request on https://huggingface.co/datasets/UAV4GEO/GeoDeep-Models and we'll include it in GeoDeep!
 
 ## Inspect Models
 
