@@ -55,19 +55,70 @@ models.cache_dir = "your/cache/path"
 
 ## Models
 
-| **Model**    | **Description**                                                                                                                                                                          | **Resolution (cm/px)** | **Experimental**   |
-| ------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------- | ------------------ |
-| cars         | YOLOv7-m model for cars detection on aerial images. Based on [ITCVD](https://arxiv.org/pdf/1801.07339).                                                                                  | 10                     |                    |
-| trees        | Retinanet tree crown detection model from [DeepForest](https://deepforest.readthedocs.io/en/v1.5.0/user_guide/02_prebuilt.html#tree-crown-detection-model)                               | 10                     | :heavy_check_mark: |
-| trees_yolov9 | YOLOv9 model for treetops detection on aerial images. Model is trained on a mix of publicly available datasets.                                                                          | 10                     | :heavy_check_mark: |
-| birds        | Retinanet bird detection model from [DeepForest](https://deepforest.readthedocs.io/en/v1.5.0/user_guide/02_prebuilt.html#bird-detection-model)                                           | 2                      | :heavy_check_mark: |
-| planes       | YOLOv7 tiny model for object detection on satellite images. Based on the [Airbus Aircraft Detection dataset](https://www.kaggle.com/datasets/airbusgeo/airbus-aircrafts-sample-dataset). | 70                     | :heavy_check_mark: |
+| **Model**    | **Description**                                                                                                                                                                          | **Resolution (cm/px)** | **Experimental**   | **Classes**                                                                                                                                                                             |
+| ------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------- | ------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| cars         | YOLOv7-m model for cars detection on aerial images. Based on [ITCVD](https://arxiv.org/pdf/1801.07339).                                                                                  | 10                     |                    | car                                                                                                                                                                                     |
+| trees        | Retinanet tree crown detection model from [DeepForest](https://deepforest.readthedocs.io/en/v1.5.0/user_guide/02_prebuilt.html#tree-crown-detection-model)                               | 10                     | :heavy_check_mark: | tree                                                                                                                                                                                    |
+| trees_yolov9 | YOLOv9 model for treetops detection on aerial images. Model is trained on a mix of publicly available datasets.                                                                          | 10                     | :heavy_check_mark: | tree                                                                                                                                                                                    |
+| birds        | Retinanet bird detection model from [DeepForest](https://deepforest.readthedocs.io/en/v1.5.0/user_guide/02_prebuilt.html#bird-detection-model)                                           | 2                      | :heavy_check_mark: | bird                                                                                                                                                                                    |
+| planes       | YOLOv7 tiny model for object detection on satellite images. Based on the [Airbus Aircraft Detection dataset](https://www.kaggle.com/datasets/airbusgeo/airbus-aircrafts-sample-dataset). | 70                     | :heavy_check_mark: | plane                                                                                                                                                                                   |
+| aerovision   | YOLOv8-m for multi-class detection on aerial images.                                                                                                                                     | 30                     | :heavy_check_mark: | small-vehicle,large-vehicle,plane,storage-tank,ship,dock,ground-track-field,soccer-field,tennis-court,swimming-pool,baseball-field,road-circle,basketball-court,bridge,helicopter,crane |
 
 All ONNX models are published on https://huggingface.co/datasets/UAV4GEO/GeoDeep-Models
 
-## Creating New Models
+## Training New Models
 
-Instructions coming soon. The basic idea is to create an ONNX model (see the [retinanet conversion script](https://github.com/uav4geo/GeoDeep/blob/main/geodeep/scripts/convert_retinanet_to_onnx.py)) and possibly make some modifications to GeoDeep to handle different conventions in model architectures via conditional checking.
+tldr; nce you have trained a [YOLO](https://en.wikipedia.org/wiki/You_Only_Look_Once) model you run `yolo2geodeep` and you're done.
+
+### Requirements
+
+You need a decent GPU and plenty of RAM. It's possible to train models on a CPU, but it will take weeks (maybe even months). There's also [platforms](https://roboflow.com/train) that will do the training for you if you don't have the necessary hardware.
+
+### Step 1. Gather annotated images
+
+A good point to start is https://universe.roboflow.com/browse/aerial, but the quality of the datasets is a bit all over the place. Always inspect before using.
+
+You can also [annotate](https://roboflow.com/annotate) your own images.
+
+Aim to gather at least 1000 training images for decent results.
+
+### Step 2. Train a YOLO model
+
+For up to date instructions, follow the steps on https://docs.ultralytics.com/modes/train/. Alsk make sure to install a GPU version of pytorch (https://pytorch.org/get-started/locally/).
+
+Once you have a folder with your annotated images (e.g. `dataset/train`, `dataset/valid`), check your `data.yaml`, then run:
+
+`yolo train task=detect model=yolov8s.pt data=dataset\data.yaml epochs=400`
+
+There's also several [settings](https://docs.ultralytics.com/usage/cfg/) you can tweak.
+
+Once the processes is done, you'll end up with a `best.pt` (model checkpoint) file, usually in `runs/detect/trainX/weights/best.pt`.
+
+### Step 3. Convert the YOLO model to ONNX
+
+Before converting, you should estimate the ground sampling distance (GSD) resolution of your training data (in cm/px). This affects the model quality quite a bit so it's important to have a good estimate. If you're unsure, you can just start with a reasonable value (e.g. 10 or 20 for aerial datasets) and run a few experiments to see which model yields the best results.
+
+Then:
+
+```bash
+yolo2geodeep runs/detect/trainX/weights/best.pt [resolution]
+
+[...]
+Wrote runs/detect/trainX/weights/best.quant.onnx <-- Use this with GeoDeep
+```
+
+You can then run:
+
+```bash
+geodeep orthophoto.tif runs/detect/trainX/weights/best.quant.onnx
+```
+
+You can also convert existing ONNX models for use with GeoDeep. See the [retinanet conversion script](https://github.com/uav4geo/GeoDeep/blob/main/geodeep/scripts/convert_retinanet_to_onnx.py) for an example. In some cases modifications to GeoDeep might be required if the model architecture is not supported. Currently GeoDeep supports:
+
+ * YOLO 5,6,7,8,9
+ * Retinanet
+
+But other architectures can be added fairly easily.
 
 ## Why GeoDeep?
 

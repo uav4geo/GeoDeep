@@ -6,12 +6,13 @@ REPO_URL = "https://huggingface.co/datasets/UAV4GEO/GeoDeep-Models/resolve/main/
 
 MODELS = {
     'cars': 'car_aerial_detection_yolo7_ITCVD_deepness.onnx',
-    'trees': 'tree_crown_detection_retinanet_deepforest.onnx',
 
     # Experimental
+    'trees': 'tree_crown_detection_retinanet_deepforest.onnx',
     'trees_yolov9': 'yolov9_trees.onnx',
     'birds': 'bird_detection_retinanet_deepforest.onnx',
     'planes': 'model_yolov7_tiny_planes_256.onnx',
+    'aerovision': 'aerovision16-yolo8.onnx',
 
     # TODO add more
 }
