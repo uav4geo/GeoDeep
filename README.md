@@ -70,7 +70,7 @@ All ONNX models are published on https://huggingface.co/datasets/UAV4GEO/GeoDeep
 
 ## Training New Models
 
-tldr; nce you have trained a [YOLO](https://en.wikipedia.org/wiki/You_Only_Look_Once) model you run `yolo2geodeep` and you're done.
+In short, first you need to train a [YOLO](https://en.wikipedia.org/wiki/You_Only_Look_Once) model, then you run `yolo2geodeep`. See below for details.
 
 ### Requirements
 
@@ -78,7 +78,7 @@ You need a decent GPU and plenty of RAM. It's possible to train models on a CPU,
 
 ### Step 1. Gather annotated images
 
-A good point to start is https://universe.roboflow.com/browse/aerial, but the quality of the datasets is a bit all over the place. Always inspect before using.
+A good point to start is https://universe.roboflow.com/browse/aerial, but the quality of the datasets is all over the place. Always inspect before using. When downloading a dataset, choose the YOLOv8 format.
 
 You can also [annotate](https://roboflow.com/annotate) your own images.
 
@@ -88,17 +88,17 @@ Aim to gather at least 1000 training images for decent results.
 
 For up to date instructions, follow the steps on https://docs.ultralytics.com/modes/train/. Alsk make sure to install a GPU version of pytorch (https://pytorch.org/get-started/locally/).
 
-Once you have a folder with your annotated images (e.g. `dataset/train`, `dataset/valid`), check your `data.yaml`, then run:
+Once you have a folder with your annotated images (e.g. `dataset/train`, `dataset/valid`), check your `data.yaml` to make sure you have the correct number of classes, then run:
 
 `yolo train task=detect model=yolov8s.pt data=dataset\data.yaml epochs=400`
 
-There's also several [settings](https://docs.ultralytics.com/usage/cfg/) you can tweak.
+There's also several [settings](https://docs.ultralytics.com/usage/cfg/) you can tweak, but start with the defaults.
 
-Once the processes is done, you'll end up with a `best.pt` (model checkpoint) file, usually in `runs/detect/trainX/weights/best.pt`.
+Once the processes is done, you'll end up with a `best.pt` (model weights) file, usually in `runs/detect/trainX/weights/best.pt`.
 
 ### Step 3. Convert the YOLO model to ONNX
 
-Before converting, you should estimate the ground sampling distance (GSD) resolution of your training data (in cm/px). This affects the model quality quite a bit so it's important to have a good estimate. If you're unsure, you can just start with a reasonable value (e.g. 10 or 20 for aerial datasets) and run a few experiments to see which model yields the best results.
+Before converting, you should estimate the ground sampling distance (GSD) resolution of your training data (in cm/px). This affects the model quality quite a bit so it's important to have a good estimate. If you're unsure, you can just start with a reasonable value (e.g. 10 or 20 for aerial datasets) and run a few experiments to see which value yields the best results.
 
 Then:
 
@@ -109,7 +109,7 @@ yolo2geodeep runs/detect/trainX/weights/best.pt [resolution]
 Wrote runs/detect/trainX/weights/best.quant.onnx <-- Use this with GeoDeep
 ```
 
-You can then run:
+You can finally run:
 
 ```bash
 geodeep orthophoto.tif runs/detect/trainX/weights/best.quant.onnx
@@ -120,7 +120,7 @@ You can also convert existing ONNX models for use with GeoDeep. See the [retinan
  * YOLO 5,6,7,8,9
  * Retinanet
 
-But other architectures can be added fairly easily.
+Other architectures can be added. Pull requests welcome!
 
 ## Why GeoDeep?
 
