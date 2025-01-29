@@ -70,7 +70,7 @@ All ONNX models are published on https://huggingface.co/datasets/UAV4GEO/GeoDeep
 
 ## Training New Models
 
-In short, first you need to train a [YOLO](https://en.wikipedia.org/wiki/You_Only_Look_Once) model, then you run `yolo2geodeep`. See below for details.
+In short, first you need to train a [YOLO](https://en.wikipedia.org/wiki/You_Only_Look_Once) model, then you run `yolo2geodeep`. See below for details. If you already have a YOLO model, skip directly to Step 3.
 
 ### Requirements
 
