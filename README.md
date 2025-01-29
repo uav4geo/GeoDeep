@@ -122,6 +122,32 @@ You can also convert existing ONNX models for use with GeoDeep. See the [retinan
 
 Other architectures can be added. Pull requests welcome!
 
+## Inspect Models
+
+You can inspect an existing model by running:
+
+```bash
+geodeep-inspect [model ID or path to ONNX model]
+```
+
+For example:
+
+```bash
+geodeep-inspect cars
+
+det_type: YOLO_v5_or_v7_default
+det_conf: 0.3
+det_iou_thresh: 0.8
+det_classes: []
+resolution: 10.0
+class_names: {'0': 'car'}
+model_type: Detector
+tiles_overlap: 10.0
+tiles_size: 640
+input_shape: [1, 3, 640, 640]
+input_name: images
+```
+
 ## Why GeoDeep?
 
 Compared to other software packages (e.g. [Deepness](https://github.com/PUTvision/qgis-plugin-deepness)), GeoDeep relies only on two dependencies, `rasterio` and `onnxruntime`. This makes it simple and lightweight.
