@@ -4,6 +4,8 @@ A fast, easy to use, lightweight Python library for AI object detection in geosp
 
 ![Image](https://github.com/user-attachments/assets/9dc7b98b-9233-458b-976e-c619c3a608cf)
 
+![Image](https://github.com/user-attachments/assets/2d7889e9-77f4-48e1-bbcd-994a9c6a4853)
+
 ## Install
 
 ```bash
