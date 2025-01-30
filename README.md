@@ -88,7 +88,7 @@ Aim to gather at least 1000 training images for decent results.
 
 ### Step 2. Train a YOLO model
 
-For up to date instructions, follow the steps on https://docs.ultralytics.com/modes/train/. Alsk make sure to install a GPU version of pytorch (https://pytorch.org/get-started/locally/).
+For up to date instructions, follow the steps on https://docs.ultralytics.com/modes/train/. Also make sure to install a GPU version of pytorch (https://pytorch.org/get-started/locally/).
 
 Once you have a folder with your annotated images (e.g. `dataset/train`, `dataset/valid`), check your `data.yaml` to make sure you have the correct number of classes, then run:
 
