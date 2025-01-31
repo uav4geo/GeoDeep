@@ -6,6 +6,7 @@ from .inference import create_session
 from .utils import estimate_raster_resolution, cls_names_map
 from .detection import execute_detection, non_max_suppression_fast, extract_bsc, non_max_kdtree, sort_by_area, to_geojson
 from .segmentation import execute_segmentation
+from .utils import rect_intersect
 import logging
 logger = logging.getLogger("geodeep")
 
@@ -37,6 +38,9 @@ def detect(geotiff, model, output_type='bsc',
     if classes is not None:
         cn_map = cls_names_map(config['class_names'])
         config['det_classes'] = [cn_map[cls_name] for cls_name in cn_map if cls_name in classes]
+    
+    detector = config['model_type'] == 'Detector'
+    segmentor = config['model_type'] == 'Segmentor'
         
     with rasterio.open(geotiff, 'r') as raster:
         if not raster.is_tiled:
@@ -56,9 +60,16 @@ def detect(geotiff, model, output_type='bsc',
         
         height = raster.shape[0]
         width = raster.shape[1]
+        scaled_h = height // scale_factor
+        scaled_w = width // scale_factor
+        tiles_overlap = 0.3 #config['tiles_overlap'] / 100.0
 
-        windows = generate_for_size(width, height, config['tiles_size'] * scale_factor, config['tiles_overlap'] / 100.0, clip=False)
-        outputs = []
+        windows = generate_for_size(width, height, config['tiles_size'] * scale_factor, tiles_overlap, clip=False)
+        bscs = []
+        segmask = None
+
+        if segmentor:
+            segmask = np.zeros((scaled_h, scaled_w), dtype=np.uint8)
 
         # Skip alpha
         indexes = raster.indexes
@@ -76,40 +87,85 @@ def detect(geotiff, model, output_type='bsc',
                 config['tiles_size'],
             ), resampling=rasterio.enums.Resampling.bilinear)
 
-            if config['model_type'] == 'Detector':
-                res = execute_detection(img, session, config)
-            elif config['model_type'] == 'Segmentor':
-                res = execute_segmentation(img, session, config)
-            
-            # elif config['model_type'] == 
             # from .debug import draw_boxes, save_raster
             # save_raster(img, f"tmp/tiles/tile_{idx}.tif", raster)
 
-            if len(res):
-                # bboxes, scores, classes = extract_bsc(res, config)
-                # save_raster(img, f"tmp/tiles/tile_{idx}.tif", raster)
-                # draw_boxes(f"tmp/tiles/tile_{idx}.tif", f"tmp/tiles/tile_{idx}_out.tif", bboxes, scores)
+            if detector:
+                bsc = execute_detection(img, session, config)
+
+                if len(bsc):
+                    # bboxes, scores, classes = extract_bsc(bsc, config)
+                    # save_raster(img, f"tmp/tiles/tile_{idx}.tif", raster)
+                    # draw_boxes(f"tmp/tiles/tile_{idx}.tif", f"tmp/tiles/tile_{idx}_out.tif", bboxes, scores)
+                    
+                    # Scale/shift bbox coordinates from tile space to raster space
+                    bsc[:,0:4] = bsc[:,0:4] * scale_factor + np.array([w.col_off, w.row_off, w.col_off, w.row_off])
+                    bscs.append(bsc)
+            elif segmentor:
+                mask = execute_segmentation(img, session, config)
+
+                row_off = int(np.round(w.row_off / scale_factor))
+                col_off = int(np.round(w.col_off / scale_factor))
+                tile_w, tile_h = mask.shape[1:]
+
+                pad_x = int(tiles_overlap * tile_w) // 2
+                pad_y = int(tiles_overlap * tile_h) // 2
+
+                pad_l = 0
+                pad_r = 0
+                pad_t = 0
+                pad_b = 0
+
+                if w.col_off > 0:
+                    pad_l = pad_x
+                if w.col_off + w.width < width:
+                    pad_r = pad_x
+                if w.row_off > 0:
+                    pad_t = pad_y
+                if w.row_off + w.height < height:
+                    pad_b = pad_y
                 
-                # Scale/shift bbox coordinates from tile space to raster space
-                res[:,0:4] = res[:,0:4] * scale_factor + np.array([w.col_off, w.row_off, w.col_off, w.row_off])
-                outputs.append(res)
+                row_off += pad_t
+                col_off += pad_l
+                tile_w -= pad_l + pad_r
+                tile_h -= pad_t + pad_b
+
+                mask = mask[:,pad_t:pad_t+tile_h,pad_l:pad_l+tile_w]
+
+                tr, sr = rect_intersect((col_off, row_off, tile_w, tile_h), (0, 0, scaled_w, scaled_h))
+                if tr is not None and sr is not None:
+                    segmask[sr[1]:sr[1]+sr[3], sr[0]:sr[0]+sr[2]] = mask[:, tr[1]:tr[1]+tr[3], tr[0]:tr[0]+tr[2]]
+                    segmask[sr[1]:sr[1]+sr[3], sr[0]:sr[0]+sr[2]] *= (idx + 1)
+                else:
+                    logger.warning(f"Cannot merge segmentation tile {idx}")
         
         p("Finalizing", 5)
-        if len(outputs):
-            outputs = np.vstack(outputs)
-            outputs = non_max_suppression_fast(outputs, config)
-            outputs = sort_by_area(outputs, reverse=True)
-            outputs = non_max_kdtree(outputs, config['det_iou_thresh'])
-        else:
-            outputs = np.array([])
-        
-        if output_type == 'raw':
-            return outputs
-        elif output_type == 'bsc':
-            bboxes, scores, classes = extract_bsc(outputs, config)
-            # from .debug import draw_boxes
-            # draw_boxes(geotiff, "tmp/out.tif", bboxes, scores)
-            return bboxes, scores, classes
-        elif output_type == 'geojson':
-            return to_geojson(raster, outputs, config)
+
+        if detector:
+            if len(bscs):
+                bscs = np.vstack(bscs)
+                bscs = non_max_suppression_fast(bscs, config)
+                bscs = sort_by_area(bscs, reverse=True)
+                bscs = non_max_kdtree(bscs, config['det_iou_thresh'])
+            else:
+                bscs = np.array([])
+            
+            if output_type == 'raw':
+                return bscs
+            elif output_type == 'bsc':
+                bboxes, scores, classes = extract_bsc(bscs, config)
+                # from .debug import draw_boxes
+                # draw_boxes(geotiff, "tmp/out.tif", bboxes, scores)
+                return bboxes, scores, classes
+            elif output_type == 'geojson':
+                return to_geojson(raster, bscs, config)
+        elif segmentor:
+            with rasterio.open("tmp/mask1.tif", "w", dtype=np.uint8, count=1, width=scaled_w, height=scaled_h) as dst:
+                print(segmask.shape)
+                dst.write(segmask, 1)
+                # dst.write(mask)
+                print(f"Wrote mask")
+            exit(1)
+
+            return mask
 
