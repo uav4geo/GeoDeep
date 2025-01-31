@@ -84,11 +84,11 @@ print(f"Wrote {OUT_MODEL_QUANT}")
 
 
 from geodeep.inference import create_session
-from geodeep.detection import extract_bsc, execute
+from geodeep.detection import extract_bsc, execute_detection
 from geodeep.debug import draw_boxes
 
 session, config = create_session(OUT_MODEL_QUANT)
-res = execute(img, session, config)
+res = execute_detection(img, session, config)
 bboxes, scores, classes = extract_bsc(res, config)
 
 draw_boxes(TEST_IMAGE, "out.tif", bboxes, scores)

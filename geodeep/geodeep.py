@@ -4,7 +4,8 @@ from .slidingwindow import generate_for_size
 from .models import get_model_file
 from .inference import create_session
 from .utils import estimate_raster_resolution, cls_names_map
-from .detection import execute, non_max_suppression_fast, extract_bsc, non_max_kdtree, sort_by_area, to_geojson
+from .detection import execute_detection, non_max_suppression_fast, extract_bsc, non_max_kdtree, sort_by_area, to_geojson
+from .segmentation import execute_segmentation
 import logging
 logger = logging.getLogger("geodeep")
 
@@ -74,9 +75,13 @@ def detect(geotiff, model, output_type='bsc',
                 config['tiles_size'],
                 config['tiles_size'],
             ), resampling=rasterio.enums.Resampling.bilinear)
-            
-            res = execute(img, session, config)
 
+            if config['model_type'] == 'Detector':
+                res = execute_detection(img, session, config)
+            elif config['model_type'] == 'Segmentor':
+                res = execute_segmentation(img, session, config)
+            
+            # elif config['model_type'] == 
             # from .debug import draw_boxes, save_raster
             # save_raster(img, f"tmp/tiles/tile_{idx}.tif", raster)
 

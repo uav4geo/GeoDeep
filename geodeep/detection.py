@@ -246,7 +246,7 @@ def non_max_kdtree(outputs: np.ndarray, iou_threshold: float) -> np.ndarray:
     return outputs[np.asarray(list(pick_ids))]
 
 
-def execute(images, session, config):
+def execute_detection(images, session, config):
     images = preprocess(images)
 
     outs = session.run(None, {config['input_name']: images})
