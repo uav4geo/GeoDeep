@@ -4,9 +4,8 @@ from .slidingwindow import generate_for_size
 from .models import get_model_file
 from .inference import create_session
 from .utils import estimate_raster_resolution, cls_names_map
-from .detection import execute_detection, non_max_suppression_fast, extract_bsc, non_max_kdtree, sort_by_area, to_geojson
-from .segmentation import execute_segmentation
-from .utils import rect_intersect
+from .detection import execute_detection, non_max_suppression_fast, extract_bsc, non_max_kdtree, sort_by_area, bscs_to_geojson
+from .segmentation import execute_segmentation, mask_to_geojson, merge_mask
 import logging
 logger = logging.getLogger("geodeep")
 
@@ -60,16 +59,14 @@ def detect(geotiff, model, output_type='bsc',
         
         height = raster.shape[0]
         width = raster.shape[1]
-        scaled_h = height // scale_factor
-        scaled_w = width // scale_factor
-        tiles_overlap = 0.3 #config['tiles_overlap'] / 100.0
+        tiles_overlap = config['tiles_overlap'] / 100.0
 
         windows = generate_for_size(width, height, config['tiles_size'] * scale_factor, tiles_overlap, clip=False)
         bscs = []
-        segmask = None
+        mask = None
 
         if segmentor:
-            segmask = np.zeros((scaled_h, scaled_w), dtype=np.uint8)
+            mask = np.zeros((height // scale_factor, width // scale_factor), dtype=np.uint8)
 
         # Skip alpha
         indexes = raster.indexes
@@ -102,43 +99,9 @@ def detect(geotiff, model, output_type='bsc',
                     bsc[:,0:4] = bsc[:,0:4] * scale_factor + np.array([w.col_off, w.row_off, w.col_off, w.row_off])
                     bscs.append(bsc)
             elif segmentor:
-                mask = execute_segmentation(img, session, config)
+                tile_mask = execute_segmentation(img, session, config)
+                merge_mask(tile_mask, mask, w, width, height, tiles_overlap, scale_factor)
 
-                row_off = int(np.round(w.row_off / scale_factor))
-                col_off = int(np.round(w.col_off / scale_factor))
-                tile_w, tile_h = mask.shape[1:]
-
-                pad_x = int(tiles_overlap * tile_w) // 2
-                pad_y = int(tiles_overlap * tile_h) // 2
-
-                pad_l = 0
-                pad_r = 0
-                pad_t = 0
-                pad_b = 0
-
-                if w.col_off > 0:
-                    pad_l = pad_x
-                if w.col_off + w.width < width:
-                    pad_r = pad_x
-                if w.row_off > 0:
-                    pad_t = pad_y
-                if w.row_off + w.height < height:
-                    pad_b = pad_y
-                
-                row_off += pad_t
-                col_off += pad_l
-                tile_w -= pad_l + pad_r
-                tile_h -= pad_t + pad_b
-
-                mask = mask[:,pad_t:pad_t+tile_h,pad_l:pad_l+tile_w]
-
-                tr, sr = rect_intersect((col_off, row_off, tile_w, tile_h), (0, 0, scaled_w, scaled_h))
-                if tr is not None and sr is not None:
-                    segmask[sr[1]:sr[1]+sr[3], sr[0]:sr[0]+sr[2]] = mask[:, tr[1]:tr[1]+tr[3], tr[0]:tr[0]+tr[2]]
-                    segmask[sr[1]:sr[1]+sr[3], sr[0]:sr[0]+sr[2]] *= (idx + 1)
-                else:
-                    logger.warning(f"Cannot merge segmentation tile {idx}")
-        
         p("Finalizing", 5)
 
         if detector:
@@ -158,14 +121,13 @@ def detect(geotiff, model, output_type='bsc',
                 # draw_boxes(geotiff, "tmp/out.tif", bboxes, scores)
                 return bboxes, scores, classes
             elif output_type == 'geojson':
-                return to_geojson(raster, bscs, config)
+                return bscs_to_geojson(raster, bscs, config)
+            else:
+                raise Exception(f"Invalid output_type {output_type}")
         elif segmentor:
-            with rasterio.open("tmp/mask1.tif", "w", dtype=np.uint8, count=1, width=scaled_w, height=scaled_h) as dst:
-                print(segmask.shape)
-                dst.write(segmask, 1)
-                # dst.write(mask)
-                print(f"Wrote mask")
-            exit(1)
-
-            return mask
-
+            if output_type == 'raw':
+                return mask
+            elif output_type == 'geojson':
+                return mask_to_geojson(raster, mask, config, scale_factor)
+            else:
+                raise Exception(f("Invalid output_type {output_type}"))

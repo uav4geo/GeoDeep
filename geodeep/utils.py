@@ -50,37 +50,4 @@ def cls_names_map(class_names):
         d[class_names[i]] = int(i)
     return d
 
-def rect_intersect(rect1, rect2):
-    """
-    Given two rectangles, compute the intersection rectangle and return 
-    its coordinates in the coordinate system of both rectangles.
-    
-    Each rectangle is represented as (x, y, width, height).
 
-    Returns:
-    - (r1_x, r1_y, iw, ih): Intersection in rect1's local coordinates
-    - (r2_x, r2_y, iw, ih): Intersection in rect2's local coordinates
-    """
-    x1, y1, w1, h1 = rect1
-    x2, y2, w2, h2 = rect2
-
-    ix = max(x1, x2)  # Left boundary
-    iy = max(y1, y2)  # Top boundary
-    ix2 = min(x1 + w1, x2 + w2)  # Right boundary
-    iy2 = min(y1 + h1, y2 + h2)  # Bottom boundary
-
-    # Compute intersection
-    iw = max(0, ix2 - ix)
-    ih = max(0, iy2 - iy)
-
-    # If no intersection
-    if iw == 0 or ih == 0:
-        return None, None
-
-    # Compute local coordinates
-    r1_x = ix - x1
-    r1_y = iy - y1
-    r2_x = ix - x2
-    r2_y = iy - y2
-
-    return (r1_x, r1_y, iw, ih), (r2_x, r2_y, iw, ih)

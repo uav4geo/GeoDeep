@@ -259,7 +259,7 @@ def execute_detection(images, session, config):
     return postprocess(out, config)
 
 
-def to_geojson(raster, bscs, config):
+def bscs_to_geojson(raster, bscs, config):
     bboxes, scores, classes = extract_bsc(bscs, config)
     if not len(bboxes):
         return json.dumps({

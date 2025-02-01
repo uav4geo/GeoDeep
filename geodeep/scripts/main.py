@@ -33,7 +33,7 @@ def main():
     parser.add_argument(
         "--geojson-output", "-o", 
         type=str, 
-        default="boxes.geojson",
+        default="output.geojson",
         required=False, 
         help='GeoJSON output filename. Default: %(default)s'
     )
