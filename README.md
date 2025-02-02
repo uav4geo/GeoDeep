@@ -28,7 +28,7 @@ geodeep [geotiff] [model ID or path to ONNX model]
 geodeep orthophoto.tif cars
 ```
 
-Detected cars in the orthophoto are saved as a GeoJSON file containing the bounding boxes, confidence scores and class labels.
+This will create a GeoJSON file with the bounding boxes, confidence scores and class labels of all cars detected in the orthophoto.
 
 #### Semantic Segmentation
 
@@ -71,7 +71,7 @@ geojson = detect('orthophoto.tif', 'cars', output_type="geojson")
 ```python
 from geodeep import segment
 from geodeep.segmentation import save_mask_to_raster
-mask = detect('orthophoto.tif', 'buildings')
+mask = segment('orthophoto.tif', 'buildings')
 print(mask.shape) # <-- np.ndarray([height, width], dtype=np.uint8)
 
 save_mask_to_raster('orthophoto.tif', mask, 'segmentation.tif')
