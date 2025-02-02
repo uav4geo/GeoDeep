@@ -210,8 +210,7 @@ We welcome contributions! Pull requests are welcome.
 
 ## Roadmap Ideas
 
- - [ ] Train more detection models
- - [ ] Add support for semantic segmentation models
+ - [ ] Train more models
  - [ ] Faster inference optimizations
 
 ## Support the Project
