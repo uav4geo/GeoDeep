@@ -64,7 +64,7 @@ models.cache_dir = "your/cache/path"
 | trees_yolov9 | YOLOv9 model for treetops detection on aerial images. Model is trained on a mix of publicly available datasets.                                                                          | 10                     | :heavy_check_mark: | tree        |
 | birds        | Retinanet bird detection model from [DeepForest](https://deepforest.readthedocs.io/en/v1.5.0/user_guide/02_prebuilt.html#bird-detection-model)                                           | 2                      | :heavy_check_mark: | bird        |
 | planes       | YOLOv7 tiny model for object detection on satellite images. Based on the [Airbus Aircraft Detection dataset](https://www.kaggle.com/datasets/airbusgeo/airbus-aircrafts-sample-dataset). | 70                     | :heavy_check_mark: | plane       |
-| aerovision   | YOLOv8 for multi-class detection on aerial images.                                                                                                                                     | 30                     | :heavy_check_mark: | [1]         |
+| aerovision   | YOLOv8 model for multi-class detection on aerial images.                                                                                                                                     | 30                     | :heavy_check_mark: | [1]         |
 
 1. small-vehicle, large-vehicle,plane,storage-tank,boat,dock,track-field,soccer-field,tennis-court,swimming-pool,baseball-field,road-circle,basketball-court,bridge,helicopter,crane
 

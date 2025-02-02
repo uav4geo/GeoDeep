@@ -50,4 +50,14 @@ def cls_names_map(class_names):
         d[class_names[i]] = int(i)
     return d
 
-
+try:
+    from scipy.ndimage import median_filter
+except ImportError:
+    def median_filter(arr, size=5):
+        assert size % 2 == 1, "Kernel size must be an odd number."
+        pad_size = size // 2
+        padded = np.pad(arr, pad_size, mode='edge')
+        shape = (arr.shape[0], arr.shape[1], size, size)
+        strides = padded.strides + padded.strides
+        windows = np.lib.stride_tricks.as_strided(padded, shape=shape, strides=strides)
+        return np.median(windows, axis=(2, 3))

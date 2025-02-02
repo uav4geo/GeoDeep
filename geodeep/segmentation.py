@@ -57,8 +57,8 @@ def rect_intersect(rect1, rect2):
 
 def merge_mask(tile_mask, mask, window, width, height, tiles_overlap=0, scale_factor = 1.0):
     w = window
-    row_off = int(np.round(w.row_off / scale_factor))
-    col_off = int(np.round(w.col_off / scale_factor))
+    row_off = int(w.row_off // scale_factor) #int(np.round(w.row_off / scale_factor))
+    col_off = int(w.col_off // scale_factor) #int(np.round(w.col_off / scale_factor))
     tile_w, tile_h = tile_mask.shape[1:]
 
     pad_x = int(tiles_overlap * tile_w) // 2
@@ -102,6 +102,7 @@ def mask_to_geojson(raster, mask, config, scale_factor=1.0):
 
     # TODO: map classes, names
     # TODO: remove speckles (median filter? dilation/erosion?)
+    # TODO: reproject 4326
     
     return json.dumps({
         "type": "FeatureCollection",
@@ -114,3 +115,16 @@ def mask_to_geojson(raster, mask, config, scale_factor=1.0):
             for geom, value in shapes
         ]
     }, indent=2)
+
+
+def save_mask_to_raster(geotiff, mask, outfile):
+    with rasterio.open(geotiff, "r") as src:
+        p = src.profile
+        p['width'] = mask.shape[1]
+        p['height'] = mask.shape[0]
+        p['count'] = 1
+        p['transform'] *= rasterio.Affine.scale(src.profile['width'] / p['width'], src.profile['height'] / p['height'])
+
+        with rasterio.open(outfile, "w", **p) as dst:
+            dst.write(mask, 1)
+        

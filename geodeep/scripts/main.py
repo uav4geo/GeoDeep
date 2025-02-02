@@ -1,11 +1,14 @@
 import argparse
 import sys
+import os
 try:
-    from geodeep import detect, models, simple_progress, __version__
+    from geodeep import run, models, simple_progress, __version__
+    from geodeep.segmentation import save_mask_to_raster
 except ImportError:
     import os
     sys.path.append(os.path.join(os.path.dirname(__file__), "..", ".."))
-    from geodeep import detect, models, simple_progress, __version__
+    from geodeep import run, models, simple_progress, __version__
+    from geodeep.segmentation import save_mask_to_raster
 
 def main():
     parser = argparse.ArgumentParser(prog="geodeep", description="AI object detection in geospatial rasters ")
@@ -26,16 +29,16 @@ def main():
         "--output-type", "-t",
         type=str, 
         default="geojson",
-        choices=["geojson", "bsc", "raw"], 
+        choices=["geojson", "bsc", "raw", "mask"], 
         required=False, 
         help='Type of output. One of: %(choices)s. Default: %(default)s'
     )
     parser.add_argument(
-        "--geojson-output", "-o", 
+        "--output", "-o", 
         type=str, 
-        default="output.geojson",
+        default="output",
         required=False, 
-        help='GeoJSON output filename. Default: %(default)s'
+        help='Output filename. Default: %(default)s.ext'
     )
     parser.add_argument(
         "--list-models", "-l",
@@ -97,19 +100,35 @@ def main():
         parser.print_help(sys.stderr)
         exit(1)
     
-    output = detect(args.geotiff, args.model, 
-                output_type=args.output_type, 
+    output_type = args.output_type
+    if output_type == "mask":
+        output_type = "raw"
+    
+    output = run(args.geotiff, args.model, 
+                output_type=output_type, 
                 conf_threshold=args.conf_threshold,
                 resolution=args.resolution,
                 classes=args.classes,
                 max_threads=args.max_threads,
                 progress_callback=simple_progress if not args.quiet else None)
     
-    if args.output_type == "geojson":
-        with open(args.geojson_output, "w") as f:
-            f.write(output)
+    exts = {
+        'geojson': '.geojson',
+        'mask': '.tif'
+    }
+    outfile = os.path.splitext(args.output)[0] + exts.get(args.output_type, '.geojson')
+
+    if args.output_type in ["geojson", "mask"]:
+
+        if args.output_type == "geojson":
+            with open(outfile, "w") as f:
+                f.write(output)
+        
+        elif args.output_type == "mask":
+            save_mask_to_raster(args.geotiff, output, outfile)
+
         print("")
-        print(f"Wrote {args.geojson_output}")
+        print(f"Wrote {outfile}")
     else:
         print(output)
 

@@ -3,14 +3,13 @@ import numpy as np
 from .slidingwindow import generate_for_size
 from .models import get_model_file
 from .inference import create_session
-from .utils import estimate_raster_resolution, cls_names_map
+from .utils import estimate_raster_resolution, cls_names_map, median_filter
 from .detection import execute_detection, non_max_suppression_fast, extract_bsc, non_max_kdtree, sort_by_area, bscs_to_geojson
 from .segmentation import execute_segmentation, mask_to_geojson, merge_mask
 import logging
 logger = logging.getLogger("geodeep")
 
-
-def detect(geotiff, model, output_type='bsc', 
+def run(geotiff, model, output_type='bsc', 
             conf_threshold=None, resolution=None, classes=None, 
             max_threads=None, progress_callback=None):
     """
@@ -40,6 +39,9 @@ def detect(geotiff, model, output_type='bsc',
     
     detector = config['model_type'] == 'Detector'
     segmentor = config['model_type'] == 'Segmentor'
+
+    if detector and output_type == "mask":
+        raise Exception(f"Invalid output type for detector model: {output_type}")
         
     with rasterio.open(geotiff, 'r') as raster:
         if not raster.is_tiled:
@@ -125,9 +127,14 @@ def detect(geotiff, model, output_type='bsc',
             else:
                 raise Exception(f"Invalid output_type {output_type}")
         elif segmentor:
+            mask = median_filter(mask, 5)
+
             if output_type == 'raw':
                 return mask
             elif output_type == 'geojson':
                 return mask_to_geojson(raster, mask, config, scale_factor)
             else:
-                raise Exception(f("Invalid output_type {output_type}"))
+                raise Exception(f"Invalid output_type {output_type}")
+
+detect = run
+segment = run
