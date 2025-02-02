@@ -94,26 +94,60 @@ def merge_mask(tile_mask, mask, window, width, height, tiles_overlap=0, scale_fa
         
 
 def mask_to_geojson(raster, mask, config, scale_factor=1.0):
-    transform = list(raster.transform)
-    transform[0] *= scale_factor
-    transform[4] *= scale_factor
+    transform = list(raster.transform * rasterio.Affine.scale(scale_factor, scale_factor))
 
-    shapes = rasterio.features.shapes(mask, transform=transform)
+    # we currently ignore class values of 0 from vectorization
+    # by setting mask!=0
+    # but not sure if we should include them
 
-    # TODO: map classes, names
-    # TODO: remove speckles (median filter? dilation/erosion?)
-    # TODO: reproject 4326
-    
+    shapes = list(rasterio.features.shapes(source=mask, mask=mask!=0, transform=transform))
+    if not len(shapes):
+        return json.dumps({
+            "type": "FeatureCollection",
+            "features": []
+        }, indent=2)
+
+    coords = []
+    coordsIdx = []
+
+    def traverse(item, action):
+        if isinstance(item, tuple) or isinstance(item, int):
+            return action(item)
+        elif isinstance(item, list):
+            return [traverse(it, action) for it in item]
+        else:
+            raise Exception(f"Invalid item in traverse: {item}")
+
+    def gather_coords(item):
+        idx = len(coords)
+        coords.append(item)
+        return idx
+
+    for geom, _ in shapes:
+        coordsIdx.append(traverse(geom.get('coordinates'), gather_coords))
+
+    xs, ys = zip(*coords)
+    tx, ty = rasterio.warp.transform(raster.crs, "EPSG:4326", xs, ys)
+    feats = []
+
+    for i, (_, cid) in enumerate(shapes):
+        cls = config['class_names'].get(str(int(cid)), 'unknown')
+        coordinates = traverse(coordsIdx[i], lambda idx: (tx[idx], ty[idx]))
+
+        feats.append({
+                "type": "Feature",
+                "geometry": {
+                    "type": "Polygon",
+                    "coordinates": coordinates
+                },
+                "properties": {
+                    "class": cls
+                }
+            })
+
     return json.dumps({
         "type": "FeatureCollection",
-        "features": [
-            {
-                "type": "Feature",
-                "geometry": geom,
-                "properties": {"value": value}
-            }
-            for geom, value in shapes
-        ]
+        "features": feats
     }, indent=2)
 
 
@@ -128,3 +162,9 @@ def save_mask_to_raster(geotiff, mask, outfile):
         with rasterio.open(outfile, "w", **p) as dst:
             dst.write(mask, 1)
         
+def filter_small_segments(mask, config):
+    ss = config['seg_small_segment']
+    if ss > 0:
+        # Remove small polygons
+        rasterio.features.sieve(mask, ss, out=mask)
+    return mask

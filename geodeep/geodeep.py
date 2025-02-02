@@ -5,7 +5,7 @@ from .models import get_model_file
 from .inference import create_session
 from .utils import estimate_raster_resolution, cls_names_map, median_filter
 from .detection import execute_detection, non_max_suppression_fast, extract_bsc, non_max_kdtree, sort_by_area, bscs_to_geojson
-from .segmentation import execute_segmentation, mask_to_geojson, merge_mask
+from .segmentation import execute_segmentation, mask_to_geojson, merge_mask, filter_small_segments
 import logging
 logger = logging.getLogger("geodeep")
 
@@ -128,6 +128,7 @@ def run(geotiff, model, output_type='bsc',
                 raise Exception(f"Invalid output_type {output_type}")
         elif segmentor:
             mask = median_filter(mask, 5)
+            mask = filter_small_segments(mask, config)
 
             if output_type == 'raw':
                 return mask
