@@ -1,6 +1,6 @@
 # GeoDeep
 
-A fast, easy to use, lightweight Python library for AI object detection in geospatial rasters (GeoTIFFs), with pre-built models included.
+A fast, easy to use, lightweight Python library for AI object detection and semantic segmentation in geospatial rasters (GeoTIFFs), with pre-built models included.
 
 ![Image](https://github.com/user-attachments/assets/9dc7b98b-9233-458b-976e-c619c3a608cf)
 
@@ -20,13 +20,27 @@ pip install -U geodeep
 geodeep [geotiff] [model ID or path to ONNX model]
 ```
 
-Example:
+Example (object detection):
 
 ```bash
 geodeep orthophoto.tif cars
 ```
 
-Here GeoDeep will find cars in the orthophoto and write the result as a GeoJSON file containing the bounding boxes, confidence scores and class labels.
+Detected cars in the orthophoto are saved as a GeoJSON file containing the bounding boxes, confidence scores and class labels.
+
+Example (semantic segmentation):
+
+```bash
+geodeep orthophoto.tif buildings
+```
+
+Areas that correspond to buildings will be saved as a GeoJSON file containing the polygons that approximate the building footprints. You can also export a georeferenced raster mask via:
+
+```bash
+geodeep orthophoto.tif buildings -t mask
+```
+
+Note you should not expect the output mask to have the same width and height as the input raster, since most models are trained at a different resolution. 
 
 A list of up-to-date model IDs can be retrieved via:
 
@@ -38,6 +52,8 @@ See also `geodeep --help`.
 
 ### From Python
 
+### Object Detection
+
 ```python
 from geodeep import detect
 bboxes, scores, classes = detect('orthophoto.tif', 'cars')
@@ -46,6 +62,17 @@ print(scores) # <-- [score, ...]
 print(classes) # <-- [(id: int, label: str), ...]
 
 geojson = detect('orthophoto.tif', 'cars', output_type="geojson")
+```
+
+### Semantic Segmentation
+
+```python
+from geodeep import segment
+from geodeep.segmentation import save_mask_to_raster
+mask = detect('orthophoto.tif', 'buildings')
+print(mask.shape) # <-- np.ndarray([height, width], dtype=np.uint8)
+
+save_mask_to_raster('orthophoto.tif', mask, 'segmentation.tif')
 ```
 
 Models by default will be cached in `~/.cache/geodeep`. You can change that with:
@@ -57,6 +84,8 @@ models.cache_dir = "your/cache/path"
 
 ## Models
 
+### Object Detection
+
 | **Model**    | **Description**                                                                                                                                                                          | **Resolution (cm/px)** | **Experimental**   | **Classes** |
 | ------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------- | ------------------ | ----------- |
 | cars         | YOLOv7-m model for cars detection on aerial images. Based on [ITCVD](https://arxiv.org/pdf/1801.07339).                                                                                  | 10                     |                    | car         |
@@ -64,9 +93,16 @@ models.cache_dir = "your/cache/path"
 | trees_yolov9 | YOLOv9 model for treetops detection on aerial images. Model is trained on a mix of publicly available datasets.                                                                          | 10                     | :heavy_check_mark: | tree        |
 | birds        | Retinanet bird detection model from [DeepForest](https://deepforest.readthedocs.io/en/v1.5.0/user_guide/02_prebuilt.html#bird-detection-model)                                           | 2                      | :heavy_check_mark: | bird        |
 | planes       | YOLOv7 tiny model for object detection on satellite images. Based on the [Airbus Aircraft Detection dataset](https://www.kaggle.com/datasets/airbusgeo/airbus-aircrafts-sample-dataset). | 70                     | :heavy_check_mark: | plane       |
-| aerovision   | YOLOv8 model for multi-class detection on aerial images.                                                                                                                                     | 30                     | :heavy_check_mark: | [1]         |
+| aerovision   | YOLOv8 model for multi-class detection on aerial images.                                                                                                                                 | 30                     | :heavy_check_mark: | [1]         |
 
 1. small-vehicle, large-vehicle,plane,storage-tank,boat,dock,track-field,soccer-field,tennis-court,swimming-pool,baseball-field,road-circle,basketball-court,bridge,helicopter,crane
+
+### Semantic Segmentation
+
+| **Model** | **Description**                                                                                                                                          | **Resolution (cm/px)** | **Experimental**   | **Classes**          |
+| --------- | -------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------- | ------------------ | -------------------- |
+| buildings | Trained on [RampDataset](https://cmr.earthdata.nasa.gov/search/concepts/C2781412367-MLHUB.html). Annotation masks for buildings and background.          | 50                     | :heavy_check_mark: | Background, Building |
+| roads     | The model segments the Google Earth satellite images into ‘road’ and ‘not-road’ classes. Model works best on wide car roads, crossroads and roundabouts. | 21                     | :heavy_check_mark: | not_road, road       |
 
 All ONNX models are published on https://huggingface.co/datasets/UAV4GEO/GeoDeep-Models
 

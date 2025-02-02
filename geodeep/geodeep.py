@@ -9,7 +9,7 @@ from .segmentation import execute_segmentation, mask_to_geojson, merge_mask, fil
 import logging
 logger = logging.getLogger("geodeep")
 
-def run(geotiff, model, output_type='bsc', 
+def run(geotiff, model, output_type='default', 
             conf_threshold=None, resolution=None, classes=None, 
             max_threads=None, progress_callback=None):
     """
@@ -117,7 +117,7 @@ def run(geotiff, model, output_type='bsc',
             
             if output_type == 'raw':
                 return bscs
-            elif output_type == 'bsc':
+            elif output_type == 'bsc' or output_type == 'default':
                 bboxes, scores, classes = extract_bsc(bscs, config)
                 # from .debug import draw_boxes
                 # draw_boxes(geotiff, "tmp/out.tif", bboxes, scores)
@@ -130,7 +130,7 @@ def run(geotiff, model, output_type='bsc',
             mask = median_filter(mask, 5)
             mask = filter_small_segments(mask, config)
 
-            if output_type == 'raw':
+            if output_type == 'raw' or output_type == 'default':
                 return mask
             elif output_type == 'geojson':
                 return mask_to_geojson(raster, mask, config, scale_factor)

@@ -14,6 +14,9 @@ MODELS = {
     'planes': 'model_yolov7_tiny_planes_256.onnx',
     'aerovision': 'aerovision16-yolo8.onnx',
 
+    'buildings': 'buildings_ramp_XUnet_256.onnx',
+    'roads': 'road_segmentation_model_with_metadata_26_10_22.onnx',
+
     # TODO add more
 }
 
