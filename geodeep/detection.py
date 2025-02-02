@@ -64,51 +64,51 @@ def postprocess(model_output, config):
         return np.empty((0, model_output.shape[-1]), dtype=np.float32)
     
     if config['det_type'] == 'retinanet':
-        outputs = filtered
+        bscs = filtered
     else:
-        outputs = xywh2xyxy(filtered)
+        bscs = xywh2xyxy(filtered)
     
-    if len(config['det_classes']) > 0:
-        classes = extract_classes(outputs, config)
-        outputs = outputs[np.isin(classes, config['det_classes'])]
+    if len(config['classes']) > 0:
+        classes = extract_classes(bscs, config)
+        bscs = bscs[np.isin(classes, config['classes'])]
 
-    return non_max_suppression_fast(outputs, config)
+    return non_max_suppression_fast(bscs, config)
 
-def extract_bsc(outputs, config):
-    if not len(outputs):
+def extract_bsc(bscs, config):
+    if not len(bscs):
         return [], [], []
     
-    boxes = outputs[:, :4].astype(np.int32)
-    scores = extract_scores(outputs, config)
-    classes = extract_classes(outputs, config)
+    boxes = bscs[:, :4].astype(np.int32)
+    scores = extract_scores(bscs, config)
+    classes = extract_classes(bscs, config)
     
     return boxes.tolist(), scores.tolist(), [(int(c), config['class_names'].get(str(c), 'unknown')) for c in classes]
 
-def extract_scores(outputs, config):
+def extract_scores(bscs, config):
     if config['det_type'] in ["YOLO_v9", "YOLO_v8"]:
-        return np.max(outputs[:, 4:], axis=1)
+        return np.max(bscs[:, 4:], axis=1)
     else:
-        return outputs[:, 4]
+        return bscs[:, 4]
 
-def extract_classes(outputs, config):
+def extract_classes(bscs, config):
     if config['det_type'] in ["YOLO_v9", "YOLO_v8"]:
-        return np.argmax(outputs[:, 4:], axis=1)
+        return np.argmax(bscs[:, 4:], axis=1)
     else:
-        return np.argmax(outputs[:, 5:], axis=1)
+        return np.argmax(bscs[:, 5:], axis=1)
 
-def compute_centers(outputs):
-    return np.array([(outputs[:,0] + outputs[:,2]) / 2, (outputs[:,1] + outputs[:,3]) / 2]).T
+def compute_centers(bscs):
+    return np.array([(bscs[:,0] + bscs[:,2]) / 2, (bscs[:,1] + bscs[:,3]) / 2]).T
 
-def compute_areas(outputs):
-    return np.array([(outputs[:,2] - outputs[:,0]) * (outputs[:,3] - outputs[:,1])]).flatten()
+def compute_areas(bscs):
+    return np.array([(bscs[:,2] - bscs[:,0]) * (bscs[:,3] - bscs[:,1])]).flatten()
 
-def sort_by_area(outputs, reverse=False):
-    areas = compute_areas(outputs)
+def sort_by_area(bscs, reverse=False):
+    areas = compute_areas(bscs)
     if reverse:
         areas *= -1
-    return outputs[np.argsort(areas)]
+    return bscs[np.argsort(areas)]
 
-def non_max_suppression_fast(outputs: np.ndarray, config: dict) -> List:
+def non_max_suppression_fast(bscs: np.ndarray, config: dict) -> List:
     """Apply non-maximum suppression to bounding boxes
 
     Based on:
@@ -116,7 +116,7 @@ def non_max_suppression_fast(outputs: np.ndarray, config: dict) -> List:
 
     Parameters
     ----------
-    outputs : np.ndarray
+    bscs : np.ndarray
         Output array containing bounding boxes in (x1,y1,x2,y2) format and scores
 
     Returns
@@ -125,16 +125,16 @@ def non_max_suppression_fast(outputs: np.ndarray, config: dict) -> List:
         Bounding boxes to keep
     """
     # If no bounding boxes, return empty list
-    if len(outputs) == 0:
+    if len(bscs) == 0:
         return []
 
-    scores = extract_scores(outputs, config)
+    scores = extract_scores(bscs, config)
 
     # coordinates of bounding boxes
-    start_x = outputs[:, 0]
-    start_y = outputs[:, 1]
-    end_x = outputs[:, 2]
-    end_y = outputs[:, 3]
+    start_x = bscs[:, 0]
+    start_y = bscs[:, 1]
+    end_x = bscs[:, 2]
+    end_y = bscs[:, 3]
 
     # Picked bounding boxes
     pick_ids = []
@@ -157,7 +157,7 @@ def non_max_suppression_fast(outputs: np.ndarray, config: dict) -> List:
         left = np.where(ratio < config['det_iou_thresh'])
         order = order[left]
 
-    return outputs[pick_ids]
+    return bscs[pick_ids]
 
 
 def compute_iou(index: int, order: np.ndarray, start_x: np.ndarray, start_y: np.ndarray, end_x: np.ndarray, end_y: np.ndarray, areas: np.ndarray) -> np.ndarray:
@@ -201,27 +201,27 @@ def compute_iou(index: int, order: np.ndarray, start_x: np.ndarray, start_y: np.
     return intersection / (areas[index] + areas[order[:-1]] - intersection)
 
 
-def non_max_kdtree(outputs: np.ndarray, iou_threshold: float) -> np.ndarray:
+def non_max_kdtree(bscs: np.ndarray, iou_threshold: float) -> np.ndarray:
     """ Remove overlapping bounding boxes using kdtree
 
-    :param outputs: array of bounding boxes in (xyxy format)
+    :param bscs: array of bounding boxes in (xyxy format)
     :param iou_threshold: Threshold for intersection over union
     :return: Filtered output
     """
 
-    centers = compute_centers(outputs)
-    bboxes = outputs[:, :4]
-    areas = compute_areas(outputs)
+    centers = compute_centers(bscs)
+    bboxes = bscs[:, :4]
+    areas = compute_areas(bscs)
 
     kdtree = cKDTree(centers)
     pick_ids = set()
     removed_ids = set()
 
-    for i, out in enumerate(outputs):
+    for i, out in enumerate(bscs):
         if i in removed_ids:
             continue
         
-        indices = kdtree.query(centers[i], k=min(10, len(outputs)))
+        indices = kdtree.query(centers[i], k=min(10, len(bscs)))
 
         for j in indices:
             if j in removed_ids:
@@ -243,10 +243,10 @@ def non_max_kdtree(outputs: np.ndarray, iou_threshold: float) -> np.ndarray:
 
         pick_ids.add(i)
 
-    return outputs[np.asarray(list(pick_ids))]
+    return bscs[np.asarray(list(pick_ids))]
 
 
-def execute(images, session, config):
+def execute_detection(images, session, config):
     images = preprocess(images)
 
     outs = session.run(None, {config['input_name']: images})
@@ -259,8 +259,8 @@ def execute(images, session, config):
     return postprocess(out, config)
 
 
-def to_geojson(raster, outputs, config):
-    bboxes, scores, classes = extract_bsc(outputs, config)
+def bscs_to_geojson(raster, bscs, config):
+    bboxes, scores, classes = extract_bsc(bscs, config)
     if not len(bboxes):
         return json.dumps({
             "type": "FeatureCollection",
