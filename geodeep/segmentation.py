@@ -96,11 +96,8 @@ def merge_mask(tile_mask, mask, window, width, height, tiles_overlap=0, scale_fa
 def mask_to_geojson(raster, mask, config, scale_factor=1.0):
     transform = list(raster.transform * rasterio.Affine.scale(scale_factor, scale_factor))
 
-    # we currently ignore class values of 0 from vectorization
-    # by setting mask!=0
-    # but not sure if we should include them
-
-    shapes = list(rasterio.features.shapes(source=mask, mask=mask!=0, transform=transform))
+    class_mask = np.isin(mask, config['classes']) if len(config['classes']) > 0 else None
+    shapes = list(rasterio.features.shapes(source=mask, mask=class_mask, transform=transform))
     if not len(shapes):
         return json.dumps({
             "type": "FeatureCollection",

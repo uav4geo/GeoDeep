@@ -35,7 +35,7 @@ def run(geotiff, model, output_type='default',
     
     if classes is not None:
         cn_map = cls_names_map(config['class_names'])
-        config['det_classes'] = [cn_map[cls_name] for cls_name in cn_map if cls_name in classes]
+        config['classes'] = [cn_map[cls_name] for cls_name in cn_map if cls_name in classes]
     
     detector = config['model_type'] == 'Detector'
     segmentor = config['model_type'] == 'Segmentor'

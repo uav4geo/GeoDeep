@@ -5,7 +5,7 @@ build-backend = "hatchling.build"
 [project]
 requires-python = ">=3.6"
 name = "geodeep"
-description = "Free and open source library for AI object detection in geospatial rasters"
+description = "Free and open source library for AI object detection and semantic segmentation in geospatial rasters"
 version = "0.9.9"
 readme = "README.md"
 license = { file = "LICENSE" }
@@ -20,6 +20,7 @@ maintainers = [
 keywords = [
     "Python",
     "object-detection",
+    "semantic-segmentation",
     "geospatial",
     "geotiff",
 ]

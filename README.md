@@ -6,6 +6,8 @@ A fast, easy to use, lightweight Python library for AI object detection and sema
 
 ![Image](https://github.com/user-attachments/assets/2d7889e9-77f4-48e1-bbcd-994a9c6a4853)
 
+![Image](https://github.com/user-attachments/assets/2ae8603e-e251-4a9a-aedd-a19273e229e8)
+
 ## Install
 
 ```bash
@@ -106,7 +108,7 @@ models.cache_dir = "your/cache/path"
 
 All ONNX models are published on https://huggingface.co/datasets/UAV4GEO/GeoDeep-Models
 
-## Training New Models
+## Training Detection Models
 
 In short, first you need to train a [YOLO](https://en.wikipedia.org/wiki/You_Only_Look_Once) model, then you run `yolo2geodeep`. See below for details. If you already have a YOLO model, skip directly to Step 3.
 
@@ -164,6 +166,10 @@ Other architectures can be added. Pull requests welcome!
 
 The most convenient way to deploy your model is to share it. Open a pull request on https://huggingface.co/datasets/UAV4GEO/GeoDeep-Models and we'll include it in GeoDeep!
 
+## Training Segmentation Models
+
+Instructions coming soon!
+
 ## Inspect Models
 
 You can inspect an existing model by running:
@@ -180,7 +186,7 @@ geodeep-inspect cars
 det_type: YOLO_v5_or_v7_default
 det_conf: 0.3
 det_iou_thresh: 0.8
-det_classes: []
+classes: []
 resolution: 10.0
 class_names: {'0': 'car'}
 model_type: Detector

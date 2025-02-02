@@ -68,9 +68,9 @@ def postprocess(model_output, config):
     else:
         bscs = xywh2xyxy(filtered)
     
-    if len(config['det_classes']) > 0:
+    if len(config['classes']) > 0:
         classes = extract_classes(bscs, config)
-        bscs = bscs[np.isin(classes, config['det_classes'])]
+        bscs = bscs[np.isin(classes, config['classes'])]
 
     return non_max_suppression_fast(bscs, config)
 
