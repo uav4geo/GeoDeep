@@ -62,5 +62,5 @@ except ImportError:
         padded = np.pad(arr, pad_size, mode='edge')
         shape = (arr.shape[0], arr.shape[1], size, size)
         strides = padded.strides + padded.strides
-        windows = np.lib.stride_tricks.as_strided(padded, shape=shape, strides=strides)
-        return np.median(windows, axis=(2, 3)).astype(arr.dtype)
+        view = np.lib.stride_tricks.as_strided(padded, shape=shape, strides=strides)
+        return np.median(view, axis=(2, 3)).astype(arr.dtype)

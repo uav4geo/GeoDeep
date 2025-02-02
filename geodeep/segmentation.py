@@ -163,7 +163,10 @@ def save_mask_to_raster(geotiff, mask, outfile):
             dst.write(mask, 1)
         
 def filter_small_segments(mask, config):
-    ss = config['seg_small_segment']
+    # Better matches the logic from Deepness
+    # where the parameter refers to the dilation/erode size
+    # (sieve counts the number of pixels)
+    ss = (config['seg_small_segment'] * 2) ** 2
     if ss > 0:
         # Remove small polygons
         rasterio.features.sieve(mask, ss, out=mask)
