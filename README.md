@@ -22,7 +22,7 @@ pip install -U geodeep
 geodeep [geotiff] [model ID or path to ONNX model]
 ```
 
-Example (object detection):
+#### Object Detection
 
 ```bash
 geodeep orthophoto.tif cars
@@ -30,7 +30,7 @@ geodeep orthophoto.tif cars
 
 Detected cars in the orthophoto are saved as a GeoJSON file containing the bounding boxes, confidence scores and class labels.
 
-Example (semantic segmentation):
+#### Semantic Segmentation
 
 ```bash
 geodeep orthophoto.tif buildings
@@ -54,7 +54,7 @@ See also `geodeep --help`.
 
 ### From Python
 
-### Object Detection
+#### Object Detection
 
 ```python
 from geodeep import detect
@@ -66,7 +66,7 @@ print(classes) # <-- [(id: int, label: str), ...]
 geojson = detect('orthophoto.tif', 'cars', output_type="geojson")
 ```
 
-### Semantic Segmentation
+#### Semantic Segmentation
 
 ```python
 from geodeep import segment
