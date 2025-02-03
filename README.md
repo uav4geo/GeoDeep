@@ -42,7 +42,7 @@ Areas that correspond to buildings will be saved as a GeoJSON file containing th
 geodeep orthophoto.tif buildings -t mask
 ```
 
-Note you should not expect the output mask to have the same width and height as the input raster, since most models are trained at a different resolution. 
+Note you should not expect the output mask to have the same width and height as the input raster, since most models are trained at a different resolution. You can always resize the mask later.
 
 A list of up-to-date model IDs can be retrieved via:
 
