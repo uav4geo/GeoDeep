@@ -104,7 +104,7 @@ def run(geotiff, model, output_type='default',
                 tile_mask = execute_segmentation(img, session, config)
                 merge_mask(tile_mask, mask, w, width, height, tiles_overlap, scale_factor)
 
-        p("Finalizing", 5)
+        p("Finalizing", 4)
 
         if detector:
             if len(bscs):
@@ -114,6 +114,8 @@ def run(geotiff, model, output_type='default',
                 bscs = non_max_kdtree(bscs, config['det_iou_thresh'])
             else:
                 bscs = np.array([])
+
+            p("Done", 1)
             
             if output_type == 'raw':
                 return bscs
@@ -129,6 +131,8 @@ def run(geotiff, model, output_type='default',
         elif segmentor:
             mask = median_filter(mask, 5)
             mask = filter_small_segments(mask, config)
+            
+            p("Done", 1)
 
             if output_type == 'raw' or output_type == 'default':
                 return mask
