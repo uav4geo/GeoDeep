@@ -7,6 +7,7 @@ import logging
 logger = logging.getLogger("geodeep")
 
 def postprocess(model_output, config):
+    model_output[model_output<config['seg_thresh']] = 0
     mask = np.argmax(model_output, axis=1).astype(np.float32)
     return mask
 
