@@ -39,7 +39,7 @@ def preprocess(model_input):
         min_value = float(model_input.min())
         value_range = float(model_input.max()) - min_value
     else:
-        data_range = np.iinfo(image.dtype)
+        data_range = np.iinfo(model_input.dtype)
         min_value = 0
         value_range = float(data_range.max) - float(data_range.min)
     
