@@ -20,6 +20,6 @@ License: AGPLv3, see LICENSE for more details.
 """
 
 name = "geodeep"
-__version__ = "0.9.9"
+__version__ = "0.9.10"
 from .geodeep import *
 from .utils import *

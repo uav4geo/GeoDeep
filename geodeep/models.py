@@ -16,7 +16,8 @@ MODELS = {
 
     'buildings': 'buildings_ramp_XUnet_256.onnx',
     'roads': 'road_segmentation_model_with_metadata_26_10_22.onnx',
-
+    'utilities': 'utilities-811-yolo8.onnx',
+    
     # TODO add more
 }
 

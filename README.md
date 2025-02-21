@@ -96,8 +96,10 @@ models.cache_dir = "your/cache/path"
 | birds        | Retinanet bird detection model from [DeepForest](https://deepforest.readthedocs.io/en/v1.5.0/user_guide/02_prebuilt.html#bird-detection-model)                                           | 2                      | :heavy_check_mark: | bird        |
 | planes       | YOLOv7 tiny model for object detection on satellite images. Based on the [Airbus Aircraft Detection dataset](https://www.kaggle.com/datasets/airbusgeo/airbus-aircrafts-sample-dataset). | 70                     | :heavy_check_mark: | plane       |
 | aerovision   | YOLOv8 model for multi-class detection on aerial images.                                                                                                                                 | 30                     | :heavy_check_mark: | [1]         |
+| utilities    | YOLOv8 model for detecting paint markings placed on the ground by utility locators that commonly work for 811 Call before you dig.                                                       | 3                      | :heavy_check_mark: | [2]         |
 
 1. small-vehicle, large-vehicle,plane,storage-tank,boat,dock,track-field,soccer-field,tennis-court,swimming-pool,baseball-field,road-circle,basketball-court,bridge,helicopter,crane
+2. Gas, Manhole, Power, Reclaimed, Sewer, Telecom, Water
 
 ### Semantic Segmentation
 
