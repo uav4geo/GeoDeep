@@ -10,6 +10,8 @@ A fast, easy to use, lightweight Python library for AI object detection and sema
 
 ## Install
 
+Install [Python](https://www.python.org/downloads/) if you haven't already, then from a command prompt / terminal type:
+
 ```bash
 pip install -U geodeep
 ```
